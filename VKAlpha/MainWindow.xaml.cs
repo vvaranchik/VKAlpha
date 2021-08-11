@@ -19,17 +19,17 @@ namespace VKAlpha
 
         private void MetroWindow_Initialized(object sender, EventArgs e)
         {
-            _Navigation.Service = FrameMain.NavigationService;
+            _Navigation.Get.Service = FrameMain.NavigationService;
             if (string.IsNullOrEmpty(MainViewModelLocator.Settings.token))
             {
-                _Navigation.Navigate("LoginView");
+                _Navigation.Get.Navigate("LoginView");
             }
             else
             {
                 MainViewModelLocator.Vk.AccessToken.Token = MainViewModelLocator.Settings.token;
                 MainViewModelLocator.Vk.AccessToken.UserId = MainViewModelLocator.Settings.userid;
                 MainViewModelLocator.MainViewModel.SidebarVisible = true;
-                _Navigation.Navigate("AudiosListView", new ViewModels.AudiosListViewModel(MainViewModelLocator.Vk.AccessToken.UserId));
+                _Navigation.Get.Navigate("AudiosListView", new ViewModels.AudiosListViewModel(MainViewModelLocator.Vk.AccessToken.UserId));
                 MainViewModelLocator.MainViewModel.LoadPlaylists();
             }
             Handle = new WindowInteropHelper(this).Handle;

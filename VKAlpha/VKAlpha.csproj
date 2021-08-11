@@ -141,6 +141,7 @@
     <Compile Include="Extensions\NotifyPropertyChangedExtension.cs" />
     <Compile Include="Extensions\StringExtensions.cs" />
     <Compile Include="Helpers\AlbumCoverHelper.cs" />
+    <Compile Include="Helpers\BaseSingleton.cs" />
     <Compile Include="Helpers\CacheService.cs" />
     <Compile Include="Helpers\DiscordRPC.cs" />
     <Compile Include="Helpers\MainViewModel.cs" />

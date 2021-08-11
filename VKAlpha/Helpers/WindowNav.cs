@@ -4,53 +4,30 @@ using System.Windows.Navigation;
 
 namespace VKAlpha.Helpers
 {
-    public sealed class _Navigation
+    public sealed class _Navigation : BaseSingleton<_Navigation>
     {
-        private static readonly MainWindow win = (App.Current.MainWindow as MainWindow);
+        private readonly MainWindow win = (App.Current.MainWindow as MainWindow);
 
-        private static int NavCount = 0;
-
-        private static volatile _Navigation instance;
-        private static object syncRoot = new object();
+        private int NavCount = 0;
         private NavigationService _navService;
-        private static object prevPage;
+        private object prevPage;
 
         public bool clearStack { get; set; } = false;
 
-        private _Navigation() {}
-
-        private static _Navigation Instance
+        public NavigationService Service
         {
-            get
-            {
-                if (instance == null)
-                {
-                    lock (syncRoot)
-                    {
-                        if (instance == null)
-                        {
-                            instance = new _Navigation();
-                        }
-                    }
-                }
-                return instance;
-            }
-        }
-
-        public static NavigationService Service
-        {
-            get { return Instance._navService; }
+            get { return _navService; }
             set
             {
-                if (Instance._navService != null)
+                if (_navService != null)
                 {
-                    Instance._navService.Navigated -= Instance._navService_Navigated;
-                    Instance._navService.Navigating -= Instance._navService_Navigating;
+                    _navService.Navigated -= _navService_Navigated;
+                    _navService.Navigating -= _navService_Navigating;
                 }
 
-                Instance._navService = value;
-                Instance._navService.Navigated += Instance._navService_Navigated;
-                Instance._navService.Navigating += Instance._navService_Navigating;
+                _navService = value;
+                _navService.Navigated += _navService_Navigated;
+                _navService.Navigating += _navService_Navigating;
             }
         }
 
@@ -82,98 +59,75 @@ namespace VKAlpha.Helpers
                 (e.Content as UserControl).DataContext = e.ExtraData;
         }
 
-        public static void ClearStack()
+        public void ClearStack()
         {
-            while (Instance._navService.CanGoBack)
+            while (_navService.CanGoBack)
             {
-                Instance._navService.RemoveBackEntry();
+                _navService.RemoveBackEntry();
             }
             NavCount = 0;
         }
 
-        public static void Navigate(string to, object extraData)
+        public void Navigate(string to, object extraData)
         {
             var type = Type.GetType("VKAlpha.Views." + to, false);
             var page = Activator.CreateInstance(type);
-            Instance._navService.Navigate(page, extraData);
+            instance._navService.Navigate(page, extraData);
         }
 
-        public static void Navigate(string to)
+        public void Navigate(string to)
         {
             Navigate(to, null);
         }
 
-        public static void GoToSettings()
+        public void GoToSettings()
         {
             Type type = Type.GetType("VKAlpha.Views.SettingsView", false);
-            prevPage = Instance._navService.Content;
+            prevPage = _navService.Content;
             var page = Activator.CreateInstance(type);
-            Instance._navService.Navigate(page, new ViewModels.SettingsViewViewModel());
+            instance._navService.Navigate(page, new ViewModels.SettingsViewViewModel());
         }
 
-        public static void GoBackExtra()
+        public void GoBackExtra()
         {
-            Instance._navService.Navigate(prevPage);
+            _navService.Navigate(prevPage);
             prevPage = null;
             return;
         }
 
-        public static void GoBack()
+        public void GoBack()
         {
-            if (!Instance._navService.CanGoBack)
+            if (!_navService.CanGoBack)
                 return;
-            Instance._navService.GoBack();
+            _navService.GoBack();
         }
 
-        public static void GoForward()
+        public void GoForward()
         {
-            if (!Instance._navService.CanGoForward)
+            if (!_navService.CanGoForward)
                 return;
-            Instance._navService.GoForward();
+            _navService.GoForward();
         }
     }
 
-    public sealed class SettingsNav 
+    public sealed class SettingsNav : BaseSingleton<SettingsNav>
     {
-        private static volatile SettingsNav instance;
-        private static object syncRoot = new object();
-
         private NavigationService _navService;
 
-        private SettingsNav() { }
-
-        private static SettingsNav Instance
+        public NavigationService Service
         {
-            get
-            {
-                if (instance == null)
-                {
-                    lock (syncRoot)
-                    {
-                        if (instance == null)
-                        {
-                            instance = new SettingsNav();
-                        }
-                    }
-                }
-                return instance;
-            }
-        }
-
-        public static NavigationService Service
-        {
-            get { return Instance._navService; }
+            get { return _navService; }
             set
             {
-                if (Instance._navService != null)
+                if (_navService != null)
                 {
-                    Instance._navService.Navigated -= Instance._navService_Navigated;
-                    Instance._navService.Navigating -= Instance._navService_Navigating;
+                    _navService.Navigated -= _navService_Navigated;
+                    _navService.Navigating -= _navService_Navigating;
                 }
 
-                Instance._navService = value;
-                Instance._navService.Navigated += Instance._navService_Navigated;
-                Instance._navService.Navigating += Instance._navService_Navigating;
+                _navService = value;
+                _navService.Navigated += _navService_Navigated;
+                _navService.Navigating += _navService_Navigating;
             }
         }
 
@@ -187,14 +141,14 @@ namespace VKAlpha.Helpers
                 (e.Content as UserControl).DataContext = e.ExtraData;
         }
 
-        public static void Navigate(string to, object extraData)
+        public void Navigate(string to, object extraData)
         {
             Type type = Type.GetType("VKAlpha.Views.SubViews." + to, false);
             var page = Activator.CreateInstance(type);
-            Instance._navService.Navigate(page, extraData);
+            _navService.Navigate(page, extraData);
         }
 
-        public static void Navigate(string to)
+        public void Navigate(string to)
         {
             Navigate(to, null);
         }

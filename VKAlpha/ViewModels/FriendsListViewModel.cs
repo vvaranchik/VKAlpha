@@ -49,13 +49,12 @@ namespace VKAlpha.ViewModels
                     }
                 }
                 return list;
-                //return await MainViewModelLocator.Vk.VkPeople.Get(uid, "photo,photo_100,photo_400_orig,first_name,last_name", null, 0, 0, MonoVKLib.VK.Methods.People.VKPeople.SortingOrder.ByRating);
             }).ContinueWith((tsk) =>
             {
                 if (tsk.Result.Items == null || tsk.Result.Items.FirstOrDefault() == default)
                 {
                     MainViewModelLocator.MainViewModel.MessageQueue.Enqueue(MainViewModelLocator.AppLang.AccessDenied);
-                    _Navigation.GoBack();
+                    _Navigation.Get.GoBack();
                     return;
                 }
                 tsk.Result.Items.ForEach(a =>
@@ -68,13 +67,13 @@ namespace VKAlpha.ViewModels
 
         private void LoadFriendAudios(object o)
         {
-            _Navigation.Navigate("AudiosListView", new AudiosListViewModel((long)o));
+            _Navigation.Get.Navigate("AudiosListView", new AudiosListViewModel((long)o));
             MainViewModelLocator.MainViewModel.LoadPlaylists((long)o, 1);
         }
 
         private void LoadFriendsOfFriend(object o)
         {
-            _Navigation.Navigate("FriendsListView", new FriendsListViewModel((long)o));
+            _Navigation.Get.Navigate("FriendsListView", new FriendsListViewModel((long)o));
         }
     }
 }

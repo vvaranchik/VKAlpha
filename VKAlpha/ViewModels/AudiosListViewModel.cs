@@ -43,8 +43,8 @@ namespace VKAlpha.ViewModels
                 if (tsk.Result.TotalCount == 0)
                 {
                     MainViewModelLocator.MainViewModel.MessageQueue.Enqueue(MainViewModelLocator.AppLang.AccessDenied);
-                    if (!_Navigation.Service.CanGoBack) System.Diagnostics.Trace.WriteLine("No way to go back! Will crash now!");
-                    _Navigation.GoBack();
+                    if (!_Navigation.Get.Service.CanGoBack) System.Diagnostics.Trace.WriteLine("No way to go back! Will crash now!"); // this will never happen
+                    _Navigation.Get.GoBack();
                     return;
                 }
                 collection.Clear();

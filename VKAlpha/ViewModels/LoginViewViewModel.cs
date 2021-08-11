@@ -58,7 +58,7 @@ namespace VKAlpha.ViewModels
             MainViewModelLocator.Settings.Save();
             Login = "";
             Password = "";
-            _Navigation.Navigate("AudiosListView", new AudiosListViewModel(MainViewModelLocator.Vk.AccessToken.UserId));
+            _Navigation.Get.Navigate("AudiosListView", new AudiosListViewModel(MainViewModelLocator.Vk.AccessToken.UserId));
             MainViewModelLocator.MainViewModel.LoadPlaylists();
             MainViewModelLocator.MainViewModel.SidebarVisible = true;
             //MainViewModelLocator.WindowDialogs.CloseDialog();

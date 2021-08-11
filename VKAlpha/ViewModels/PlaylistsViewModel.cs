@@ -32,7 +32,7 @@ namespace VKAlpha.ViewModels
                 if (tsk.Result.TotalCount == 0)
                 {
                     MainViewModelLocator.MainViewModel.MessageQueue.Enqueue(MainViewModelLocator.AppLang.AccessDenied);
-                    _Navigation.GoBack();
+                    _Navigation.Get.GoBack();
                     return;
                 }
                 tsk.Result.Items.ForEach((a) =>
@@ -67,7 +67,7 @@ namespace VKAlpha.ViewModels
                 MainViewModelLocator.MainViewModel.MessageQueue.Enqueue("This feature not available now...");
                 return;
             }
-            _Navigation.Navigate("AudiosListView", new AudiosListViewModel((long)userId, (long)playlistId));
+            _Navigation.Get.Navigate("AudiosListView", new AudiosListViewModel((long)userId, (long)playlistId));
         }
     }
 }

@@ -10,8 +10,8 @@ namespace VKAlpha.Views
         public SettingsView()
         {
             InitializeComponent();
-            Helpers.SettingsNav.Service = SettingsFrame.NavigationService;
-            Helpers.SettingsNav.Navigate("InterfaceView");
+            Helpers.SettingsNav.Get.Service = SettingsFrame.NavigationService;
+            Helpers.SettingsNav.Get.Navigate("InterfaceView");
         }
     }
 }
