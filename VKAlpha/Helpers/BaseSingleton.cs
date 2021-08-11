@@ -47,7 +47,7 @@ namespace VKAlpha.Helpers
             lock (instance_locker)
             {
                 is_destroyed = true;
-                instance_locker = null;
+                instance = null;
             }
         }
 
