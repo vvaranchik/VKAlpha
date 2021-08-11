@@ -1,0 +1,114 @@
+﻿<UserControl x:Class="VKAlpha.Views.AudiosControlView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:md="http://materialdesigninxaml.net/winfx/xaml/themes"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:vm="clr-namespace:VKAlpha.ViewModels"
+             xmlns:i="http://schemas.microsoft.com/expression/2010/interactivity"
+             xmlns:local="clr-namespace:VKAlpha.Views"
+             xmlns:helpers="clr-namespace:VKAlpha.Helpers"
+             mc:Ignorable="d" 
+             d:DesignHeight="600" d:DesignWidth="800">
+    <UserControl.Resources>
+        <Style TargetType="{x:Type ToggleButton}" BasedOn="{StaticResource MaterialDesignActionDarkToggleButton}">
+            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="Background" Value="Transparent"/>
+            <Style.Triggers>
+                <Trigger Property="IsMouseOver" Value="True">
+                    <Setter Property="Foreground" Value="AntiqueWhite"/>
+                </Trigger>
+            </Style.Triggers>
+        </Style>
+        <Style x:Key="SimpleButtonV2" TargetType="{x:Type Button}" BasedOn="{StaticResource SimpleButtonStyle}">
+            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="Background" Value="Transparent"/>
+            <Style.Triggers>
+                <Trigger Property="IsMouseOver" Value="True">
+                    <Setter Property="Foreground" Value="AntiqueWhite"/>
+                </Trigger>
+            </Style.Triggers>
+        </Style>
+        <Style TargetType="{x:Type Slider}" BasedOn="{StaticResource MaterialDesignSlider}"/>
+    </UserControl.Resources>
+    
+
+        <!--
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="210"/>
+            <ColumnDefinition Width="1"/>
+            <ColumnDefinition Width="*"/>
+        </Grid.ColumnDefinitions>
+        <StackPanel Orientation="Vertical" Grid.Column="0">
+            <Grid Height="150">
+                <Image Visibility="Collapsed" Margin="25,10,45,10"/>
+                <md:PackIcon Margin="25,10,45,10" Height="Auto" Width="Auto" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Kind="Alpha" Foreground="{StaticResource VKColor}"/>
+                <ToggleButton Margin="174,7,10,117" Height="26" Width="24" IsEnabled="False">
+                    <md:PackIcon Kind="SignalVariant" Height="26" Width="24" />
+                    <md:ToggleButtonAssist.OnContent>
+                        <md:PackIcon Kind="SignalVariant" Height="26" Width="24" Foreground="{StaticResource VKColor}" />
+                    </md:ToggleButtonAssist.OnContent>
+                </ToggleButton>
+                <ToggleButton Margin="174,62,10,62" Height="26" Width="24" IsChecked="{Binding GetPlayer.IsRepeated, Mode=TwoWay}">
+                    <md:PackIcon Kind="Loop" Height="26" Width="24" ToolTip="Repeat off" />
+                    <md:ToggleButtonAssist.OnContent>
+                        <md:PackIcon Kind="Loop" Height="26" Width="24" Foreground="{StaticResource VKColor}" ToolTip="Repeat on" />
+                    </md:ToggleButtonAssist.OnContent>
+                </ToggleButton>
+                <ToggleButton Margin="174,117,10,7" Height="26" Width="24" IsChecked="{Binding GetPlayer.IsShuffled, Mode=TwoWay}">
+                    <md:PackIcon Kind="ShuffleVariant" Height="26" Width="24" ToolTip="Shuffle off" />
+                    <md:ToggleButtonAssist.OnContent>
+                        <md:PackIcon Kind="ShuffleVariant" Height="26" Width="24" Foreground="{StaticResource VKColor}" ToolTip="Shuffle on" />
+                    </md:ToggleButtonAssist.OnContent>
+                </ToggleButton>
+            </Grid>
+            <Button x:Name="btnArtist" Margin="10,0,10,0" ToolTip="{Binding GetPlayer.CurrentTrack.Title}" FontSize="20" Foreground="Black" Style="{StaticResource SimpleButtonStyle}" Click="scrollToItem">
+                <TextBlock Text="{Binding GetPlayer.CurrentTrack.Title}" TextTrimming="CharacterEllipsis"/>
+            </Button>
+            <TextBlock Margin="10,4,10,0" Text="{Binding GetPlayer.CurrentTrack.Artist}" ToolTip="{Binding GetPlayer.CurrentTrack.Artist}" FontSize="16" Foreground="Gray" TextTrimming="CharacterEllipsis"/>
+            <Slider IsMoveToPointEnabled="True" Margin="15,10,15,0" Foreground="{StaticResource VKColor}" 
+                    Minimum="0" Value="{Binding GetPlayer.SliderValue, Mode=TwoWay}" Maximum="{Binding GetPlayer.CurrentTrack.Duration.TotalSeconds}"/>
+            <Grid Height="87">
+                <TextBlock Margin="10,0,0,0" Text="{Binding GetPlayer.SliderValue, Converter={StaticResource DoubleToTimeSpanStringConventer}}" HorizontalAlignment="Left" Width="50" Height="20" VerticalAlignment="Top"/>
+                <TextBlock Text="{Binding GetPlayer.CurrentTrack.Duration, Converter={StaticResource AudioTimeSpanConverter}}" HorizontalAlignment="Right" Width="42" Height="20" VerticalAlignment="Top"/>
+                <ToggleButton Height="26" Width="24" Command="{Binding SkipTrack}" CommandParameter="Prev" HorizontalAlignment="Left" Margin="40,0,0,36" VerticalAlignment="Bottom" 
+                              ToolTip="Prev Track">
+                    <md:PackIcon Kind="SkipPrevious" Height="26" Width="24"  />
+                    <md:ToggleButtonAssist.OnContent>
+                        <md:PackIcon Kind="SkipPrevious" Height="26" Width="24"/>
+                    </md:ToggleButtonAssist.OnContent>
+                </ToggleButton>
+                <ToggleButton Height="26" Width="24" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="92,25,92,36" 
+                              IsChecked="{Binding GetPlayer.IsPlaying}" Command="{Binding PlayPause}">
+                    <md:PackIcon Kind="Play" Height="26" Width="24" ToolTip="Play"/>
+                    <md:ToggleButtonAssist.OnContent>
+                        <md:PackIcon Kind="Pause" Height="26" Width="24" ToolTip="Pause"/>
+                    </md:ToggleButtonAssist.OnContent>
+                </ToggleButton>
+                <ToggleButton Height="26" Width="24" Command="{Binding SkipTrack}" CommandParameter="Next" HorizontalAlignment="Right" Margin="0,25,40,36"
+                              ToolTip="Next Track">
+                    <md:PackIcon Kind="SkipNext" Height="26" Width="24"/>
+                    <md:ToggleButtonAssist.OnContent>
+                        <md:PackIcon Kind="SkipNext" Height="26" Width="24"/>
+                    </md:ToggleButtonAssist.OnContent>
+                </ToggleButton>
+                <ToggleButton Margin="0,54,183,7" Height="26" Width="24" ToolTip="Mute">
+                    <md:PackIcon Kind="VolumeOff" Height="26" Width="24"/>
+                    <md:ToggleButtonAssist.OnContent>
+                        <md:PackIcon Kind="VolumeOff" Height="26" Width="24"/>
+                    </md:ToggleButtonAssist.OnContent>
+                </ToggleButton>
+                <ToggleButton Margin="183,54,0,8" Height="26" Width="24" ToolTip="Max Vol">
+                    <md:PackIcon Kind="VolumeHigh" Height="26" Width="24"/>
+                    <md:ToggleButtonAssist.OnContent>
+                        <md:PackIcon Kind="VolumeHigh" Height="26" Width="24"/>
+                    </md:ToggleButtonAssist.OnContent>
+                </ToggleButton>
+                <Slider Margin="30,56,30,0" Foreground="{StaticResource VKColor}" Minimum="0" Maximum="1" TickFrequency="0.02" SmallChange="0.2" LargeChange="0.3" IsSnapToTickEnabled="True" Value="{Binding GetPlayer.Volume, Mode=TwoWay}" Height="21" VerticalAlignment="Top" />
+            </Grid>
+        </StackPanel>
+        <StackPanel Orientation="Horizontal" Grid.Column="1">
+            <Rectangle VerticalAlignment="Stretch" Stroke="{StaticResource VKColor}"/>
+        </StackPanel>
+        -->
+</UserControl>

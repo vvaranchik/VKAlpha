@@ -1,0 +1,30 @@
+﻿<UserControl x:Class="VKAlpha.Dialogs.EditSong"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:local="clr-namespace:VKAlpha.Dialogs"
+             xmlns:md="http://materialdesigninxaml.net/winfx/xaml/themes"
+             mc:Ignorable="d" 
+             d:DesignHeight="280" d:DesignWidth="360">
+     <md:DialogHost Name="EditSongDial">
+        <md:DialogHost.DialogContent> 
+    <Grid MinHeight="280" MinWidth="360" Background="White">
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="75"/>
+            <ColumnDefinition Width="145"/>
+        </Grid.ColumnDefinitions>
+        <TextBlock Grid.Column="0" Margin="10,20,10,0" Text="Artist" Height="20" VerticalAlignment="Top"/>
+        <TextBlock Grid.Column="0" Margin="10,45,10,0" Text="Title" Height="20" VerticalAlignment="Top"/>
+        <TextBlock Grid.Column="0" Margin="10,70,10,0" Text="Lyrics" Height="20" VerticalAlignment="Top"/>
+        <TextBox x:Name="artistEdit" Margin="10,10,-128,0" Grid.Column="1" Height="28" VerticalAlignment="Top"/>
+        <TextBox x:Name="titleEdit" Margin="10,43,-128,0" Grid.Column="1" Height="26" VerticalAlignment="Top"/>
+        <TextBox x:Name="lyricsEdit" TextWrapping="WrapWithOverflow" TextAlignment="Justify" AcceptsReturn="True" Margin="10,74,-128,0" Grid.Column="1" Height="176" VerticalAlignment="Top"/>
+        <Button Style="{DynamicResource SimpleButtonV2}" BorderBrush="Red" HorizontalContentAlignment="Center" BorderThickness="0.6" Foreground="Red" Background="Transparent" 
+                Grid.Column="1" Margin="216,255,-128,0" Height="21" Content="CANCEL" VerticalAlignment="Top" Command="{Binding CloseDialog}"/>
+        <Button x:Name="SumbitEdit" Style="{DynamicResource SimpleButtonV2}" BorderBrush="{DynamicResource VKColor}" HorizontalContentAlignment="Center" BorderThickness="0.6" Foreground="{DynamicResource VKColor}" Background="Transparent" 
+                Grid.Column="1" Margin="156,255,-65,0" Height="21" Content="SUBMIT" VerticalAlignment="Top"/>
+    </Grid>
+    </md:DialogHost.DialogContent>
+    </md:DialogHost>
+</UserControl>
