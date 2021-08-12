@@ -14,13 +14,13 @@ namespace VKAlpha.ViewModels
 
         public ObservableCollection<AudioModel> collection { get => _collection; private set => _collection = value; }
 
-        public AudiosListViewModel(long uid)
+        public AudiosListViewModel(ulong uid)
         {
             Init(uid);
             PlayCommand = new RelayCommand(Play);
         }
 
-        public AudiosListViewModel(long uid, long albumId)
+        public AudiosListViewModel(ulong uid, long albumId)
         {
             Init(uid, albumId);
             PlayCommand = new RelayCommand(Play);
@@ -32,23 +32,23 @@ namespace VKAlpha.ViewModels
             PlayCommand = new RelayCommand(Play);
         }
 
-        private async void Init(long uid, long albumId = 0)
+        private async void Init(ulong uid, long albumId = 0)
         {
             _ = MainViewModelLocator.WindowDialogs.OpenDialog(new Dialogs.Loading().LoadingDial.DialogContent);
             await Task.Run(async () =>
             {
-                return albumId == 0 ? await MainViewModelLocator.Vk.VkAudio.Get(uid) : await MainViewModelLocator.Vk.VkAudio.Get(uid, albumId);
+                return albumId == 0 ? await MainViewModelLocator.Vk.VkAudio.Get((long)uid) : await MainViewModelLocator.Vk.VkAudio.Get((long)uid, albumId);
             }).ContinueWith(tsk =>
             {
-                if (tsk.Result.TotalCount == 0)
+                if (tsk.Result.Size() == 0)
                 {
                     MainViewModelLocator.MainViewModel.MessageQueue.Enqueue(MainViewModelLocator.AppLang.AccessDenied);
-                    if (!_Navigation.Get.Service.CanGoBack) System.Diagnostics.Trace.WriteLine("No way to go back! Will crash now!"); // this will never happen
-                    _Navigation.Get.GoBack();
+                    if (!Navigation.Get.Service.CanGoBack) { Navigation.Get.GoBackExtra(); return; } 
+                    Navigation.Get.GoBack();
                     return;
                 }
                 collection.Clear();
-                tsk.Result.Items.ForEach((a) =>
+                tsk.Result.ForEach((a) =>
                 {
                     if (!string.IsNullOrEmpty(a.Url))
                         collection.Add(AudioModel.VKModelToAudio(a));
@@ -67,7 +67,7 @@ namespace VKAlpha.ViewModels
                 return await MainViewModelLocator.Vk.VkAudio.Search(query);
             }).ContinueWith(tsk =>
             {
-                tsk.Result.Items.ForEach((a) =>
+                tsk.Result.ForEach((a) =>
                 {
                     if (!string.IsNullOrEmpty(a.Url))
                         collection.Add(AudioModel.VKModelToAudio(a));

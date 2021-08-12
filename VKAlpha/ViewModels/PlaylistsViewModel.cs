@@ -15,27 +15,27 @@ namespace VKAlpha.ViewModels
 
         public ObservableCollection<MonoVKLib.VK.Models.VKPlaylistModel> collection { get => _collection; private set => _collection = value; }
 
-        public PlaylistsViewModel(long uid)
+        public PlaylistsViewModel(ulong uid)
         {
             Init(uid);
             LoadPlaylist = new RelayCommand((o) => LoadUserPlaylist(uid, (long)o));
         }
 
-        private async void Init(long uid)
+        private async void Init(ulong uid)
         {
             _ = MainViewModelLocator.WindowDialogs.OpenDialog(new Dialogs.Loading().LoadingDial.DialogContent);
             await Task.Run(async () =>
             {
-                return await MainViewModelLocator.Vk.VkAudio.GetPlaylists(uid);
+                return await MainViewModelLocator.Vk.VkAudio.GetPlaylists((long)uid);
             }).ContinueWith(tsk =>
             {
-                if (tsk.Result.TotalCount == 0)
+                if (tsk.Result.IsEmpty())
                 {
                     MainViewModelLocator.MainViewModel.MessageQueue.Enqueue(MainViewModelLocator.AppLang.AccessDenied);
-                    _Navigation.Get.GoBack();
+                    Navigation.Get.GoBack();
                     return;
                 }
-                tsk.Result.Items.ForEach((a) =>
+                tsk.Result.ForEach((a) =>
                 {
                     if (a.Count > 0)
                     {
@@ -67,7 +67,7 @@ namespace VKAlpha.ViewModels
                 MainViewModelLocator.MainViewModel.MessageQueue.Enqueue("This feature not available now...");
                 return;
             }
-            _Navigation.Get.Navigate("AudiosListView", new AudiosListViewModel((long)userId, (long)playlistId));
+            Navigation.Get.Navigate("AudiosListView", new AudiosListViewModel(ulong.Parse(userId.ToString()), (long)playlistId));
         }
     }
 }

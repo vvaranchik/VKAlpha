@@ -97,14 +97,15 @@ namespace VKAlpha.BASS
 
         public static void RefreshDisplayData(AudioModel audio)
         {
-            displayUpdater.ClearAll();
-            displayUpdater.Type = MediaPlaybackType.Music;
+            if (displayUpdater.Type != MediaPlaybackType.Music)
+            {
+                displayUpdater.ClearAll();
+                displayUpdater.Type = MediaPlaybackType.Music;
+            }
             if (audio != null)
             {
-                musicProperties.AlbumArtist = audio.Artist;
-                musicProperties.AlbumTitle = audio.Title;
-                musicProperties.Artist = audio.Artist;
-                musicProperties.Title = audio.Title;
+                musicProperties.AlbumArtist = musicProperties.Artist = audio.Artist;
+                musicProperties.AlbumTitle = musicProperties.Title = audio.Title;
             }
             displayUpdater.Update();
         }

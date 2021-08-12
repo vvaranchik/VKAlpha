@@ -9,7 +9,7 @@ namespace VKAlpha.Helpers
     {
         private static readonly DiscordPresence discord = new DiscordPresence();
         private static readonly Properties.Settings _settings = new Properties.Settings();
-        private static readonly VK _vk = new VK("2274003", "hHbZxrka2uZ6jB1inYsH", "5.68", "");
+        private static readonly VK _vk = new VK("2274003", "hHbZxrka2uZ6jB1inYsH");
         private static readonly Spotify _spotify = new Spotify(_settings.sptoken, _settings.spexpire);
         private static readonly BassAudioPlayer _bass = new BassAudioPlayer();
         private static readonly PlaylistControl _pc = new PlaylistControl();

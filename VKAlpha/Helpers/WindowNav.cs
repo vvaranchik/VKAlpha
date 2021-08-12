@@ -4,7 +4,7 @@ using System.Windows.Navigation;
 
 namespace VKAlpha.Helpers
 {
-    public sealed class _Navigation : BaseSingleton<_Navigation>
+    public sealed class Navigation : BaseSingleton<Navigation>
     {
         private readonly MainWindow win = (App.Current.MainWindow as MainWindow);
 
@@ -72,7 +72,8 @@ namespace VKAlpha.Helpers
         {
             var type = Type.GetType("VKAlpha.Views." + to, false);
             var page = Activator.CreateInstance(type);
-            instance._navService.Navigate(page, extraData);
+            prevPage = _navService.Content;
+            _navService.Navigate(page, extraData);
         }
 
         public void Navigate(string to)

@@ -23,7 +23,7 @@ namespace VKAlpha.ViewModels
 
         public SettingsViewViewModel()
         {
-            GoBack = new RelayCommand((o) => { _Navigation.Get.GoBackExtra(); MainViewModelLocator.MainViewModel.SidebarVisible = true; });
+            GoBack = new RelayCommand((o) => { Navigation.Get.GoBackExtra(); MainViewModelLocator.MainViewModel.SidebarVisible = true; });
             InterfaceMenu = new RelayCommand((o) => SettingsNav.Get.Navigate("InterfaceView", new InterfaceMenuViewModel()));
             //HotkeysMenu = new RelayCommand((o) => SettingsNav.Navigate("HotkeysMenu"));
             //UpdateMenu = new RelayCommand((o) => SettingsNav.Navigate("UpdateMenu"));

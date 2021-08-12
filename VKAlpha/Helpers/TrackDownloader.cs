@@ -6,7 +6,6 @@ using System.Threading.Tasks;
 using System.Windows.Threading;
 using RestSharp;
 using VKAlpha.Extensions;
-using Windows.Media.AppBroadcasting;
 
 namespace VKAlpha.Helpers
 {
@@ -22,33 +21,29 @@ namespace VKAlpha.Helpers
 
             Dispatcher.CurrentDispatcher.Invoke(() =>
             {
-                if (Directory.Exists($"Cache/download/"))
+                if (!Directory.Exists("./Cache/downloads/"))
+                    Directory.CreateDirectory("./Cache/downloads/");
+                var fileName = CacheService.GetSafeFileName(item.FullData);
+                var path = Path.Combine("Cache", $"downloads/{fileName}.mp3");
+                if (File.Exists(path))
                 {
-                    var fileName = CacheService.GetSafeFileName(item.FullData);
-                    var path = Path.Combine("Cache", $"download/{fileName}.mp3");
-                    if (File.Exists(path))
+                    MainViewModelLocator.MainViewModel.MessageQueue.Enqueue($"{item.FullData} already downloaded!");
+                    tcs.SetResult(item.Id);
+                }
+                else
+                {
+                    MainViewModelLocator.MainViewModel.MessageQueue.Enqueue($"Starting download {item.FullData}");
+                    using(var writer = File.OpenWrite(path))
                     {
-                        MainViewModelLocator.MainViewModel.MessageQueue.Enqueue($"{item.FullData} already downloaded!");
-                        tcs.SetResult(item.Id);
-                    }
-                    else
-                    {
-                        MainViewModelLocator.MainViewModel.MessageQueue.Enqueue($"Starting download {item.FullData}");
-                        var writer = File.OpenWrite(path);
                         var client = new RestClient(new Uri(item.Url));
                         var request = new RestRequest(Method.GET);
                         request.ResponseWriter = stream => { using (stream) { stream.CopyTo(writer); } };
                         client.DownloadData(request);
-                        MainViewModelLocator.MainViewModel.MessageQueue.Enqueue($"{item.FullData} Download completed");
-                        writer.Dispose();
+                        writer.Flush();
                     }
+                    MainViewModelLocator.MainViewModel.MessageQueue.Enqueue($"{item.FullData} Download completed");
                 }
-                else
-                {
-                    MainViewModelLocator.MainViewModel.MessageQueue.Enqueue("Error! No directory for download!");
-                    tcs.SetResult(item.Id);
-                }
-                    
+
             });
             return tcs.Task;
         }

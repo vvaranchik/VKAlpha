@@ -119,8 +119,8 @@ namespace VKAlpha.Helpers
             PlayCommand = new RelayCommand((o) => MainViewModelLocator.BassPlayer.PauseResume());
             SkipPrev = new RelayCommand((o) => MainViewModelLocator.BassPlayer.Prev());
             SkipNext = new RelayCommand((o) => MainViewModelLocator.BassPlayer.Next());
-            GoForward = new RelayCommand((o) => _Navigation.Get.GoForward());
-            GoBackward = new RelayCommand((o) => _Navigation.Get.GoBack());
+            GoForward = new RelayCommand((o) => Navigation.Get.GoForward());
+            GoBackward = new RelayCommand((o) => Navigation.Get.GoBack());
             CloseDialog = new RelayCommand((o) => MainViewModelLocator.WindowDialogs.CloseDialog());
             DownloadSong = new RelayCommand((o) => TrackDownloader.AddToQueue((AudioModel)o));
             Upload = new RelayCommand((o) => UploadAudio(o));
@@ -176,7 +176,7 @@ namespace VKAlpha.Helpers
             if ((string)o == "")
                 return;
             IsSearchActive = true;
-            _Navigation.Get.Navigate("AudiosListView", new ViewModels.AudiosListViewModel((string)o));
+            Navigation.Get.Navigate("AudiosListView", new ViewModels.AudiosListViewModel((string)o));
         }
 
         public void ClearPlaylistsList(int category)
@@ -184,19 +184,19 @@ namespace VKAlpha.Helpers
             SideBarItems[category].TreeContent.Clear();
         }
 
-        public void LoadPlaylists(long userId = -1L, int category = 0)
+        public void LoadPlaylists(ulong userId = 0ul, int category = 0)
         {
-            if (userId == -1L) userId = MainViewModelLocator.Vk.AccessToken.UserId;
+            if (userId == 0ul) userId = MainViewModelLocator.Vk.AccessToken.UserId;
             ClearPlaylistsList(category);
             Task.Run(async () =>
             {
-                return await MainViewModelLocator.Vk.VkAudio.GetPlaylists(userId);
+                return await MainViewModelLocator.Vk.VkAudio.GetPlaylists((long)userId);
             }).ContinueWith((tsk) =>
             {
                 var result = tsk.Result;
-                if (result.TotalCount > 0)
+                if (result.Size() > 0)
                 {
-                    SideBarItems[category].TreeContent.Add(new DrawerItem(MainViewModelLocator.AppLang.Playlists, new RelayCommand((o) => { _Navigation.Get.Navigate("PlaylistsView", new ViewModels.PlaylistsViewModel(userId)); })));
+                    SideBarItems[category].TreeContent.Add(new DrawerItem(MainViewModelLocator.AppLang.Playlists, new RelayCommand((o) => { Navigation.Get.Navigate("PlaylistsView", new ViewModels.PlaylistsViewModel(userId)); })));
                 }
             }, TaskScheduler.FromCurrentSynchronizationContext());
         }
@@ -209,21 +209,21 @@ namespace VKAlpha.Helpers
                 new DrawerCategory(MainViewModelLocator.AppLang.MyAudios, PackIconKind.MusicBoxOutline, new RelayCommand((o)=>
                 {
                     if(IsSearchActive) IsSearchActive = false;
-                    _Navigation.Get.Navigate("AudiosListView", new ViewModels.AudiosListViewModel(MainViewModelLocator.Vk.AccessToken.UserId));
+                    Navigation.Get.Navigate("AudiosListView", new ViewModels.AudiosListViewModel(MainViewModelLocator.Vk.AccessToken.UserId));
                 })),
-                new DrawerCategory(MainViewModelLocator.AppLang.Friends, PackIconKind.AccountMultipleOutline, new RelayCommand((o)=> _Navigation.Get.Navigate("FriendsListView", new ViewModels.FriendsListViewModel(MainViewModelLocator.Vk.AccessToken.UserId)) )),
+                new DrawerCategory(MainViewModelLocator.AppLang.Friends, PackIconKind.AccountMultipleOutline, new RelayCommand((o)=> Navigation.Get.Navigate("FriendsListView", new ViewModels.FriendsListViewModel(MainViewModelLocator.Vk.AccessToken.UserId)) )),
                 new DrawerCategory(MainViewModelLocator.AppLang.Settings, PackIconKind.SettingsOutline,  new RelayCommand((o)=>
                 {
                     SidebarVisible = false;
-                    _Navigation.Get.GoToSettings();
+                    Navigation.Get.GoToSettings();
                 })),
                 new DrawerCategory(MainViewModelLocator.AppLang.LogOut, PackIconKind.AccountMinusOutline, new RelayCommand((o)=>
                 {
                     MainViewModelLocator.BassPlayer.Stop();
                     ClearUserData();
                     SidebarVisible = false;
-                    _Navigation.Get.Navigate("LoginView");
-                    _Navigation.Get.ClearStack();
+                    Navigation.Get.Navigate("LoginView");
+                    Navigation.Get.ClearStack();
                 }))
             };
 

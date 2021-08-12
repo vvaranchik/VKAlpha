@@ -1,14 +1,9 @@
-﻿using RestSharp.Extensions;
+﻿using RestSharp;
 using System;
-using System.Collections.Generic;
 using System.IO;
-using System.Linq;
-using System.Net.Http;
-using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Media;
 using VKAlpha.Extensions;
-using Debug = System.Diagnostics.Trace;
 
 namespace VKAlpha.Helpers
 {
@@ -33,7 +28,6 @@ namespace VKAlpha.Helpers
                     stream.Flush();
                 }
                 model.ImageByteData = ms.GetBuffer();
-                //BASS.WindowsMediaControls.SetArtworkThumbnail(model.ImageByteData);
                 return bi;
             }
 
@@ -46,24 +40,18 @@ namespace VKAlpha.Helpers
             if (string.IsNullOrEmpty(url))
                 return null;
 
-            try
+            using(var writer = File.OpenWrite(path))
             {
-                using (var stream = await new HttpClient().GetStreamAsync(url))
-                {
-                    using (var ms = new MemoryStream())
-                    {
-                        await stream.CopyToAsync(ms);
-                        ms.Seek(0, SeekOrigin.Begin);
-                        await SaveStream(ms, path);
-                    }
-                }
+                var client = new RestClient(new Uri(url));
+                var request = new RestRequest(Method.GET);
+                request.ResponseWriter = stream => { using (stream) { stream.CopyTo(writer); } }; 
+                client.DownloadData(request);
+                await writer.FlushAsync();
+            }
 
+            //just to make sure
+            if (File.Exists(path))
                 return await GetCachedImage(path, model);
-            }
-            catch (Exception ex)
-            {
-                Debug.WriteLine(ex);
-            }
 
             return null;
         }
@@ -77,22 +65,6 @@ namespace VKAlpha.Helpers
             }
 
             return fileName;
-        }
-
-        private static Task SaveStream(Stream stream, string fileName)
-        {
-            using (var fileStream = File.OpenWrite(fileName))
-            {
-                var buffer = new byte[1024];
-
-                while (stream.Read(buffer, 0, buffer.Length) > 0)
-                {
-                    fileStream.Write(buffer, 0, buffer.Length);
-                }
-
-                fileStream.Flush();
-            }
-            return Task.CompletedTask;
         }
     }
 }

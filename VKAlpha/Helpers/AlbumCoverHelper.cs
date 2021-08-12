@@ -20,18 +20,25 @@ namespace VKAlpha.Helpers
         public static void RequestCover(AudioModel model)
         {
             if (isRequesting)
+            {
                 CancelCover();
+            }
             isRequesting = true;
-            Requesting(token.Token, model);
+            Process(token.Token, model);
         }
 
-        private async static void Requesting(CancellationToken token, AudioModel model) 
+        private async static void Process(CancellationToken token, AudioModel model) 
         {
             if (token.IsCancellationRequested)
+            {
                 CancelCover();
-
-            if (!Directory.Exists("Cache") || !Directory.Exists("Cache/covers"))
                 return;
+            }
+
+            if (!Directory.Exists("./Cache") || !Directory.Exists("./Cache/covers"))
+            {
+                Directory.CreateDirectory("./Cache/covers/");
+            }
 
             path = Path.Combine("Cache", $"covers/{model.Id}.jpg");
 
@@ -44,6 +51,7 @@ namespace VKAlpha.Helpers
             if (File.Exists(path))
             {
                 model.Cover = await CacheService.GetCachedImage(path, model);
+                isRequesting = false;
                 return;
             }
 
@@ -51,8 +59,12 @@ namespace VKAlpha.Helpers
             if (imageUri != null)
             {
                 if (token.IsCancellationRequested)
+                {
                     CancelCover();
+                    return;
+                }
                 model.Cover = await CacheService.SetCover(imageUri, path, model);
+                isRequesting = false;
             }
         }
     }

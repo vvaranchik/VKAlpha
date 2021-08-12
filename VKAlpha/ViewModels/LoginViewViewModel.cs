@@ -54,11 +54,11 @@ namespace VKAlpha.ViewModels
                 return;
             }
             MainViewModelLocator.Settings.token = MainViewModelLocator.Vk.AccessToken.Token;
-            MainViewModelLocator.Settings.userid = MainViewModelLocator.Vk.AccessToken.UserId;
+            MainViewModelLocator.Settings.userid = (long)MainViewModelLocator.Vk.AccessToken.UserId;
             MainViewModelLocator.Settings.Save();
             Login = "";
             Password = "";
-            _Navigation.Get.Navigate("AudiosListView", new AudiosListViewModel(MainViewModelLocator.Vk.AccessToken.UserId));
+            Navigation.Get.Navigate("AudiosListView", new AudiosListViewModel(MainViewModelLocator.Vk.AccessToken.UserId));
             MainViewModelLocator.MainViewModel.LoadPlaylists();
             MainViewModelLocator.MainViewModel.SidebarVisible = true;
             //MainViewModelLocator.WindowDialogs.CloseDialog();

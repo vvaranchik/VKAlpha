@@ -18,28 +18,33 @@ namespace VKAlpha.ViewModels
 
         public ObservableCollection<MonoVKLib.VK.Models.VKUserProfile> collection { get => _collection; private set => _collection = value; }
 
-        public FriendsListViewModel(long uid)
+        public FriendsListViewModel(ulong uid)
         {
             Init(uid);
             GetFriendsOf = new RelayCommand(LoadFriendsOfFriend);
             GetFriendAudios = new RelayCommand(LoadFriendAudios);
         }
 
-        private async void Init(long uid)
+        private async void Init(ulong uid)
         {
             _ = MainViewModelLocator.WindowDialogs.OpenDialog(new Dialogs.Loading().LoadingDial.DialogContent);
             await Task.Run(async () =>
             {
                 List<string> uids = new List<string>();
-                var list = await MainViewModelLocator.Vk.VkPeople.Get(uid, "photo,photo_100,photo_400_orig,first_name,last_name", null, 0, 0, MonoVKLib.VK.Methods.People.VKPeople.SortingOrder.ByRating, MainViewModelLocator.AppLang.language);
-                foreach (var profile in list.Items)
+                var list = await MainViewModelLocator.Vk.VkPeople.Get(uid, "photo,photo_100,photo_400_orig,first_name,last_name", null, 0, 0, MonoVKLib.VK.Methods.People.SortingOrder.ByRating, MainViewModelLocator.AppLang.language);
+                if (list.IsEmpty())
+                {
+                    return list;
+                }
+                list.ForEach((profile) => uids.Add(profile.Id.ToString()));
+                foreach (MonoVKLib.VK.Models.VKUserProfile profile in list)
                 {
                     uids.Add(profile.Id.ToString());
                 }
                 var list2 = await MainViewModelLocator.Vk.VkPeople.GetBaseUserInfo(uids, null, "gen", MainViewModelLocator.AppLang.language);
-                foreach (var a in list.Items)
+                foreach (MonoVKLib.VK.Models.VKUserProfile a in list)
                 {
-                    foreach (var p in list2.Items)
+                    foreach (MonoVKLib.VK.Models.VKUserProfile p in list2)
                     {
                         if (a.Id == p.Id)
                         {
@@ -51,13 +56,14 @@ namespace VKAlpha.ViewModels
                 return list;
             }).ContinueWith((tsk) =>
             {
-                if (tsk.Result.Items == null || tsk.Result.Items.FirstOrDefault() == default)
+                if (tsk.Result.IsEmpty())
                 {
                     MainViewModelLocator.MainViewModel.MessageQueue.Enqueue(MainViewModelLocator.AppLang.AccessDenied);
-                    _Navigation.Get.GoBack();
+                    if (!Navigation.Get.Service.CanGoBack) { Navigation.Get.GoBackExtra(); return; }
+                    Navigation.Get.GoBack();
                     return;
                 }
-                tsk.Result.Items.ForEach(a =>
+                tsk.Result.ForEach(a =>
                 {
                     collection.Add(a);
                 });
@@ -67,13 +73,13 @@ namespace VKAlpha.ViewModels
 
         private void LoadFriendAudios(object o)
         {
-            _Navigation.Get.Navigate("AudiosListView", new AudiosListViewModel((long)o));
-            MainViewModelLocator.MainViewModel.LoadPlaylists((long)o, 1);
+            Navigation.Get.Navigate("AudiosListView", new AudiosListViewModel(ulong.Parse(o.ToString())));
+            MainViewModelLocator.MainViewModel.LoadPlaylists(ulong.Parse(o.ToString()), 1);
         }
 
         private void LoadFriendsOfFriend(object o)
         {
-            _Navigation.Get.Navigate("FriendsListView", new FriendsListViewModel((long)o));
+            Navigation.Get.Navigate("FriendsListView", new FriendsListViewModel(ulong.Parse(o.ToString())));
         }
     }
 }

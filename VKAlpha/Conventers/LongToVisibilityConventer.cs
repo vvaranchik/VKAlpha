@@ -16,7 +16,7 @@ namespace VKAlpha.Conventers
             var result = long.Parse(value.ToString());
             bool invert = false;
             if (parameter != null) invert = bool.Parse(parameter.ToString());
-            if (Helpers.MainViewModelLocator.Vk.AccessToken.UserId == result)
+            if (Helpers.MainViewModelLocator.Vk.AccessToken.UserId == (ulong)result)
             {
                 if (!invert)
                     return Visibility.Visible;
