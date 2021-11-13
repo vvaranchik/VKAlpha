@@ -63,7 +63,7 @@ namespace VKAlpha.Helpers
                     CancelCover();
                     return;
                 }
-                model.Cover = await CacheService.SetCover(imageUri, path, model);
+                model.Cover = await CacheService.SetCover(imageUri.GetResult(), path, model);
                 isRequesting = false;
             }
         }

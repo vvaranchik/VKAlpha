@@ -17,7 +17,7 @@ namespace VKAlpha.Dialogs
                     _session.Close();
                 _session = null;
             }
-            await ((MainWindow)App.Current.MainWindow).RootDialog.ShowDialog(content, (object o, DialogOpenedEventArgs args) => _session = args.Session);
+            await ((MainWindow)App.Current.MainWindow).RootDialog.ShowDialog(content, (object _, DialogOpenedEventArgs args) => _session = args.Session);
         }
 
         public void CloseDialog()

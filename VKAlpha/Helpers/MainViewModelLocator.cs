@@ -2,6 +2,7 @@
 using MonoVKLib.VK;
 using MonoSpotifyLib.Spotify;
 using VKAlpha.BASS;
+using MonoVKLib.VK.Exceptions;
 
 namespace VKAlpha.Helpers
 {

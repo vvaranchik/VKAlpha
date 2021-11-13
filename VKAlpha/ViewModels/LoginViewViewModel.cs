@@ -1,9 +1,6 @@
 ﻿using System;
 using System.ComponentModel;
-using System.Windows.Controls;
 using System.Windows.Input;
-using System.Threading.Tasks;
-using System.Threading;
 using VKAlpha.Extensions;
 using VKAlpha.Helpers;
 using MonoVKLib.VK.Exceptions;
@@ -17,33 +14,35 @@ namespace VKAlpha.ViewModels
         private string captchaSid;
         private string captchaKey;
 
-        public ICommand iLogIn { get; set; }
+        public ICommand iLogIn { get; }
 
         public string Login { get => _login; set => this.MutateVerbose(ref _login, value, RaisePropertyChanged()); }
 
         public string Password { get => _pass; set => this.MutateVerbose(ref _pass, value, RaisePropertyChanged()); }
+
+        private bool CanLogin(object o) => !string.IsNullOrEmpty(Login) && !string.IsNullOrEmpty(Password);
 
         public LoginViewViewModel()
         {
             iLogIn = new RelayCommand(TryLogin, CanLogin);
         }
 
-        private async void TryLogin(object o)
+        private async void TryLogin(object _ = null)
         {
-            _ = MainViewModelLocator.WindowDialogs.OpenDialog(new Dialogs.Loading().LoadingDial.DialogContent);
+            MainViewModelLocator.WindowDialogs.OpenDialog(new Dialogs.Loading().LoadingDial.DialogContent);
             var result = await MainViewModelLocator.Vk.VkAuth.Login(Login, Password, captchaSid, captchaKey);
             if (!result)
             {
-                switch (VKErrorProcessor.GetLastError.code)
+                switch (VKErrorProcessor.GetLastError().code)
                 {
                     case VKErrorProcessor.VKErrors.Capthca:
-                        var e = (VKErrorProcessor.GetLastError.exception as VKCaptchaRequired);
+                        var e = (VKErrorProcessor.GetLastError().exception as VKCaptchaRequired);
                         var captcha = new Dialogs.CaptchaDialog();
                         captcha.CaptchaImg.Source = await e.CaptchaImg.GetImageSource();
                         await MainViewModelLocator.WindowDialogs.OpenDialog(captcha.CaptchaDial.DialogContent);
                         captchaSid = e.CaptchaSid;
                         captchaKey = captcha.CaptchaKey.Text;
-                        TryLogin(null);
+                        TryLogin();
                         break;
                     case VKErrorProcessor.VKErrors.InvalidClient:
                         MainViewModelLocator.WindowDialogs.CloseDialog();
@@ -64,21 +63,8 @@ namespace VKAlpha.ViewModels
             //MainViewModelLocator.WindowDialogs.CloseDialog();
         }
 
-        private bool CanLogin(object o)
-        {
-            return !string.IsNullOrEmpty(Login) && !string.IsNullOrEmpty(Password);
-            /*
-            if (!string.IsNullOrWhiteSpace(Login) && !string.IsNullOrWhiteSpace(Password))
-                return true;
-            return false;
-            */
-        }
-
         public event PropertyChangedEventHandler PropertyChanged;
 
-        private Action<PropertyChangedEventArgs> RaisePropertyChanged()
-        {
-            return args => PropertyChanged?.Invoke(this, args);
-        }
+        private Action<PropertyChangedEventArgs> RaisePropertyChanged() => args => PropertyChanged?.Invoke(this, args);
     }
 }

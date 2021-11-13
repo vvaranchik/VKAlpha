@@ -53,7 +53,8 @@ namespace VKAlpha
                              let data = items.FullData
                              where data.Contains(query, StringComparison.OrdinalIgnoreCase)
                              select items;
-                page.AudiosList.ItemsSource = result;
+                if (result != null && result.FirstOrDefault() != default)
+                    page.AudiosList.ItemsSource = result;
             }
             else if (FrameMain.Content.GetType().Name == "FriendsListView")
             {
@@ -66,8 +67,9 @@ namespace VKAlpha
                 var result = from items in vm.collection
                              let data = items.Name
                              where data.Contains(query, StringComparison.OrdinalIgnoreCase)
-                             select items;
-                page.FriendsList.ItemsSource = result;
+                             select items; 
+                if (result != null && result.FirstOrDefault() != default)
+                    page.FriendsList.ItemsSource = result;
             }
             else if (FrameMain.Content.GetType().Name == "PlaylistsView")
             {
@@ -81,7 +83,8 @@ namespace VKAlpha
                              let data = items.Title
                              where data.Contains(query, StringComparison.OrdinalIgnoreCase)
                              select items;
-                page.PlaylistList.ItemsSource = result;
+                if (result != null && result.FirstOrDefault() != default)
+                    page.PlaylistList.ItemsSource = result;
             }
         }
 
@@ -98,7 +101,8 @@ namespace VKAlpha
                              let data = items.FullData
                              where data.Contains(MainViewModelLocator.BassPlayer.CurrentTrack.FullData, StringComparison.OrdinalIgnoreCase)
                              select items;
-                audiosView.AudiosList.ScrollIntoView(result.ToList()[0]);
+                if (result != null && result.FirstOrDefault() != default)
+                    audiosView.AudiosList.ScrollIntoView(result.ToList()[0]);
                 //audiosView.AudiosList.ScrollIntoView(MainViewModelLocator.BassPlayer.CurrentTrack);
             }
         }

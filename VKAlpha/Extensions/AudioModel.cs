@@ -1,5 +1,6 @@
-﻿using System.ComponentModel;
-using System.Runtime.CompilerServices;
+﻿using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using System.ComponentModel;
 using VKAlpha.BASS;
 using VKAlpha.Helpers;
 
@@ -10,34 +11,15 @@ namespace VKAlpha.Extensions
         private bool _coverRequested;
         private System.Windows.Media.ImageSource _cover = null;
         private byte[] _bitmapImage = null;
+        bool requesting = false;
 
         private string CoverPath => System.IO.Path.Combine("Cache", $"covers/{Id}.jpg");
 
-        public static bool operator true(AudioModel model)
-        {
-            return model != null || model != default;
-        }
-        public static bool operator false(AudioModel model)
-        {
-            return model == null || model == default;
-        }
-
-
         public byte[] ImageByteData 
         {
-            get
-            {
-                return _bitmapImage;
-            }
-            set
-            {
-                if (_bitmapImage == value)
-                    return;
-                _bitmapImage = value;
-                OnPropertyChanged();
-            }
+            get => _bitmapImage;
+            set => this.MutateVerbose(ref _bitmapImage, value, RaisePropertyChanged());
         }
-
 
         public System.Windows.Media.ImageSource Cover 
         {
@@ -51,18 +33,11 @@ namespace VKAlpha.Extensions
                 WindowsMediaControls.SetArtworkThumbnail(ImageByteData);
                 return _cover;
             }
-            set
-            {
-                if (_cover == value)
-                    return;
-                _cover = value;
-                OnPropertyChanged();
-            }
+            set => this.MutateVerbose(ref _cover, value, RaisePropertyChanged());
         }
 
         public static AudioModel VKModelToAudio(MonoVKLib.VK.Models.VKAudioModel vk)
-        {
-            return new AudioModel()
+            => new AudioModel()
             {
                 AlbumId = vk.AlbumId,
                 Artist = vk.Artist,
@@ -77,9 +52,30 @@ namespace VKAlpha.Extensions
                 OwnerId = vk.OwnerId,
                 Url = vk.Url
             };
-        }
 
-        bool requesting = false;
+        public static Collection<AudioModel> VKArrayToAudioCollection(MonoVKLib.VK.Models.VKItemResponseBase<MonoVKLib.VK.Models.VKAudioModel> vkCollection)
+        {
+            var collection = new Collection<AudioModel>();
+            foreach (MonoVKLib.VK.Models.VKAudioModel vkAudio in vkCollection)
+            {
+                collection.Add(new AudioModel()
+                {
+                    AlbumId = vkAudio.AlbumId,
+                    Artist = vkAudio.Artist,
+                    Title = vkAudio.Title,
+                    Cover = null,
+                    ImageByteData = null,
+                    Date = vkAudio.Date,
+                    Duration = vkAudio.Duration,
+                    GenreId = vkAudio.GenreId,
+                    Id = vkAudio.Id,
+                    LyricsId = vkAudio.LyricsId,
+                    OwnerId = vkAudio.OwnerId,
+                    Url = vkAudio.Url
+                });
+            }
+            return collection;
+        }
 
         private void GetCover()
         {
@@ -93,9 +89,6 @@ namespace VKAlpha.Extensions
 
         public event PropertyChangedEventHandler PropertyChanged;
 
-        protected virtual void OnPropertyChanged([CallerMemberName] string propertyName = null)
-        {
-            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
-        }
+        private System.Action<PropertyChangedEventArgs> RaisePropertyChanged() => args => PropertyChanged?.Invoke(this, args);
     }
 }

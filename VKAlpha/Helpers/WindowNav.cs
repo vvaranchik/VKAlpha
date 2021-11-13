@@ -12,11 +12,11 @@ namespace VKAlpha.Helpers
         private NavigationService _navService;
         private object prevPage;
 
-        public bool clearStack { get; set; } = false;
+        bool clearStack { get; set; } = false;
 
         public NavigationService Service
         {
-            get { return _navService; }
+            get => _navService;
             set
             {
                 if (_navService != null)
@@ -44,14 +44,11 @@ namespace VKAlpha.Helpers
             NavCount++;
             if (clearStack)
             {
-                clearStack = false;
                 ClearStack();
             }
-            // 
             if (NavCount > 6)
             {
-                while (Service.CanGoBack) Service.RemoveBackEntry();
-                NavCount = 0;
+                ClearStack();
             }
             if (e.Content == null)
                 return;
@@ -61,16 +58,25 @@ namespace VKAlpha.Helpers
 
         public void ClearStack()
         {
+            clearStack = false;
             while (_navService.CanGoBack)
             {
                 _navService.RemoveBackEntry();
             }
             NavCount = 0;
         }
+        
+        public void SubViewNavigate(string to, object extraData)
+        {
+            var type = Type.GetType($"VKAlpha.Views.SubViews.{to}", false);
+            var page = Activator.CreateInstance(type);
+            prevPage = _navService.Content;
+            _navService.Navigate(page, extraData);
+        }
 
         public void Navigate(string to, object extraData)
         {
-            var type = Type.GetType("VKAlpha.Views." + to, false);
+            var type = Type.GetType($"VKAlpha.Views.{to}", false);
             var page = Activator.CreateInstance(type);
             prevPage = _navService.Content;
             _navService.Navigate(page, extraData);
@@ -93,7 +99,6 @@ namespace VKAlpha.Helpers
         {
             _navService.Navigate(prevPage);
             prevPage = null;
-            return;
         }
 
         public void GoBack()
@@ -145,6 +150,11 @@ namespace VKAlpha.Helpers
         public void Navigate(string to, object extraData)
         {
             Type type = Type.GetType("VKAlpha.Views.SubViews." + to, false);
+            if (_navService.Content != null )
+            {
+                if (_navService.Content.ToString() == $"VKAlpha.Views.SubViews.{to}")
+                    return;
+            }
             var page = Activator.CreateInstance(type);
             _navService.Navigate(page, extraData);
         }

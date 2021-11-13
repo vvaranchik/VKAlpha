@@ -4,10 +4,9 @@ namespace VKAlpha.Helpers
 {
     public abstract class CClass
     {
-        public static bool operator! (CClass @this)
-        {
-            return @this == null;
-        }
+        public static bool operator! (CClass @this) => @this == null;
+        public static bool operator false(CClass @this) => !@this || @this == default;
+        public static bool operator true(CClass @this) => !!@this || @this != default;
     }
 
     public abstract class BaseSingleton<T> : CClass, IDisposable where T : CClass
@@ -32,6 +31,19 @@ namespace VKAlpha.Helpers
                     }
                 }
                 return instance;
+            }
+        }
+
+        static object one_way_locker = new object();
+
+        public static T GetOneWay
+        {
+            get
+            {
+                lock (one_way_locker)
+                {
+                    return Get;
+                }
             }
         }
 

@@ -74,6 +74,7 @@ namespace VKAlpha.ViewModels
         private void LoadFriendAudios(object o)
         {
             Navigation.Get.Navigate("AudiosListView", new AudiosListViewModel(ulong.Parse(o.ToString())));
+            if (MainViewModelLocator.BassPlayer.IsShuffled) MainViewModelLocator.PlaylistControl.RequstShuffle = true;
             MainViewModelLocator.MainViewModel.LoadPlaylists(ulong.Parse(o.ToString()), 1);
         }
 

@@ -44,5 +44,7 @@ namespace VKAlpha.Resources.Themes
         public Brush TextBoxBackground { get; set; }
         [JsonProperty(Required = Required.Always)]
         public Brush TextBoxForeground { get; set; }
+        [JsonProperty(Required =Required.Always)]
+        public Brush listboxItemHovered { get; set; }
     }
 }

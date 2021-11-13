@@ -1,16 +1,16 @@
-﻿using System;
-using System.IO;
-using System.Runtime.InteropServices;
+﻿using System.IO;
 using System.Threading.Tasks;
 using System.Windows;
-using System.Windows.Navigation;
 using Newtonsoft.Json;
 using VKAlpha.Helpers;
+using Windows.System;
 
 namespace VKAlpha
 {
     public partial class App : Application
     {
+
+        /// <param name="lang">ISO 639-1 lang code</param>
         private bool LoadLang(string lang)
         {
             bool result = false;
@@ -51,16 +51,15 @@ namespace VKAlpha
             return true;
         }
 
-        protected override void OnStartup(StartupEventArgs e)
+        public static void CreateDefaultSetup(bool lang, bool theme)
         {
-            if (!LoadLang(MainViewModelLocator.Settings.lang))
-                if (!LoadLang("en")) 
-                {
-                    Directory.CreateDirectory("./Resources/Lang/");
-                    if (File.Exists("./Resources/Lang/en.json"))
-                        File.Delete("./Resources/Lang/en.json");
-                    File.WriteAllText("./Resources/Lang/en.json",
-                        @"{
+            if (lang)
+            {
+                Directory.CreateDirectory("./Resources/Lang/");
+                if (File.Exists("./Resources/Lang/en.json"))
+                    File.Delete("./Resources/Lang/en.json");
+                File.WriteAllText("./Resources/Lang/en.json",
+                    @"{
   ""language"": ""en"",
   ""Friends"": ""Friends"",
   ""LogOut"": ""Log Out"",
@@ -99,9 +98,9 @@ namespace VKAlpha
   ""My"": ""My"",
   ""strFormatFriends"": ""[user] [friends]""
 }");
-                    if (File.Exists("./Resources/Lang/ru.json"))
-                        File.Delete("./Resources/Lang/ru.json");
-                    File.WriteAllText("./Resources/Lang/ru.json", @"
+                if (File.Exists("./Resources/Lang/ru.json"))
+                    File.Delete("./Resources/Lang/ru.json");
+                File.WriteAllText("./Resources/Lang/ru.json", @"
 {
   ""language"": ""ru"",
   ""Friends"": ""Друзья"",
@@ -142,16 +141,13 @@ namespace VKAlpha
   ""strFormatFriends"": ""[friends] [user]""
 }
 ");
-                    LoadLang("en");
-                }//throw new FileNotFoundException("Language file not found or corrupted!");
-
-            if (!LoadTheme(MainViewModelLocator.Settings.theme))
-                if (!LoadTheme("default"))
-                {
-                    Directory.CreateDirectory("./Resources/Themes/");
-                    if (File.Exists("./Resources/Themes/default.json"))
-                        File.Delete("./Resources/Themes/default.json");
-                    File.WriteAllText("./Resources/Themes/default.json", @"
+            }
+            if (theme)
+            {
+                Directory.CreateDirectory("./Resources/Themes/");
+                if (File.Exists("./Resources/Themes/default.json"))
+                    File.Delete("./Resources/Themes/default.json");
+                File.WriteAllText("./Resources/Themes/default.json", @"
 {
 	""name"": ""Default [VK Alpha] Theme"",
 	""shortname"": ""default"",
@@ -170,12 +166,13 @@ namespace VKAlpha
 	""AboveMain"": ""#FF4169FF"",
 	""btnHovered"": ""#FF142155"",
 	""checkBoxUncheked"": ""#FFffffff"",
-	""checkBoxChecked"": ""#FF142155""
+	""checkBoxChecked"": ""#FF142155"",
+    ""listboxItemHovered"": ""FFE2E2E2""
 }
 ");
-                    if (File.Exists("./Resources/Themes/defaultdark.json"))
-                        File.Delete("./Resources/Themes/defaultdark.json");
-                    File.WriteAllText("./Resources/Themes/defaultdark.json", @"
+                if (File.Exists("./Resources/Themes/defaultdark.json"))
+                    File.Delete("./Resources/Themes/defaultdark.json");
+                File.WriteAllText("./Resources/Themes/defaultdark.json", @"
 {
 	""name"": ""Default DARK [VK Alpha] Theme"",
 	""shortname"": ""defaultdark"",
@@ -194,11 +191,30 @@ namespace VKAlpha
 	""AboveMain"": ""#FF142155"",
 	""btnHovered"": ""#FF4169FF"",
 	""checkBoxUncheked"": ""#FFffffff"",
-	""checkBoxChecked"": ""#FF4169FF""
+	""checkBoxChecked"": ""#FF4169FF"",
+    ""listboxItemHovered"": ""FF2A2A2A""
 }
 ");
+            }
+        }
+
+        protected override void OnStartup(StartupEventArgs e)
+        {
+            if (!LoadLang(MainViewModelLocator.Settings.lang))
+                if (!LoadLang("en")) 
+                {
+                    CreateDefaultSetup(true, false);
+                    LoadLang("en");
+                }//throw new FileNotFoundException("Language file not found or corrupted!");
+
+            if (!LoadTheme(MainViewModelLocator.Settings.theme))
+                if (!LoadTheme("default"))
+                {
+                    CreateDefaultSetup(false, true);
                     LoadTheme("default");
                 }//throw new FileNotFoundException("Theme file not found or corrupted!");
+
+            
 
             base.OnStartup(e);
         }

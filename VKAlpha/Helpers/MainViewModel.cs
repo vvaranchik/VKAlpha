@@ -151,11 +151,7 @@ namespace VKAlpha.Helpers
             }
         }
 
-        private async void UploadAudio(object _)
-        {
-            var dialog = new Dialogs.UploadDialog();
-            await MainViewModelLocator.WindowDialogs.OpenDialog(dialog.UploadDial.DialogContent);
-        }
+        private async void UploadAudio(object _) => await MainViewModelLocator.WindowDialogs.OpenDialog(new Dialogs.UploadDialog().UploadDial.DialogContent);
 
         private async void Edit(object item)
         {
@@ -179,10 +175,8 @@ namespace VKAlpha.Helpers
             Navigation.Get.Navigate("AudiosListView", new ViewModels.AudiosListViewModel((string)o));
         }
 
-        public void ClearPlaylistsList(int category)
-        {
-            SideBarItems[category].TreeContent.Clear();
-        }
+        public void ClearPlaylistsList(int category) => SideBarItems[category].TreeContent.Clear();
+        
 
         public void LoadPlaylists(ulong userId = 0ul, int category = 0)
         {
@@ -196,9 +190,18 @@ namespace VKAlpha.Helpers
                 var result = tsk.Result;
                 if (result.Size() > 0)
                 {
-                    SideBarItems[category].TreeContent.Add(new DrawerItem(MainViewModelLocator.AppLang.Playlists, new RelayCommand((o) => { Navigation.Get.Navigate("PlaylistsView", new ViewModels.PlaylistsViewModel(userId)); })));
+                    SideBarItems[category].TreeContent.Add(new DrawerItem(MainViewModelLocator.AppLang.Playlists, new RelayCommand((o) => Navigation.Get.Navigate("PlaylistsView", new ViewModels.PlaylistsViewModel(userId)) )));
                 }
             }, TaskScheduler.FromCurrentSynchronizationContext());
+        }
+
+        public void Logout()
+        {
+            MainViewModelLocator.BassPlayer.Stop();
+            ClearUserData();
+            SidebarVisible = false;
+            Navigation.Get.Navigate("LoginView");
+            Navigation.Get.ClearStack();
         }
 
         public MainViewModel()
@@ -211,7 +214,7 @@ namespace VKAlpha.Helpers
                     if(IsSearchActive) IsSearchActive = false;
                     Navigation.Get.Navigate("AudiosListView", new ViewModels.AudiosListViewModel(MainViewModelLocator.Vk.AccessToken.UserId));
                 })),
-                new DrawerCategory(MainViewModelLocator.AppLang.Friends, PackIconKind.AccountMultipleOutline, new RelayCommand((o)=> Navigation.Get.Navigate("FriendsListView", new ViewModels.FriendsListViewModel(MainViewModelLocator.Vk.AccessToken.UserId)) )),
+                new DrawerCategory(MainViewModelLocator.AppLang.Friends, PackIconKind.AccountMultipleOutline, new RelayCommand((o) => Navigation.Get.Navigate("FriendsListView", new ViewModels.FriendsListViewModel(MainViewModelLocator.Vk.AccessToken.UserId)) )),
                 new DrawerCategory(MainViewModelLocator.AppLang.Settings, PackIconKind.SettingsOutline,  new RelayCommand((o)=>
                 {
                     SidebarVisible = false;
@@ -219,22 +222,14 @@ namespace VKAlpha.Helpers
                 })),
                 new DrawerCategory(MainViewModelLocator.AppLang.LogOut, PackIconKind.AccountMinusOutline, new RelayCommand((o)=>
                 {
-                    MainViewModelLocator.BassPlayer.Stop();
-                    ClearUserData();
-                    SidebarVisible = false;
-                    Navigation.Get.Navigate("LoginView");
-                    Navigation.Get.ClearStack();
+                    Logout();
                 }))
             };
-
             InitCommands();
         }
 
         public event PropertyChangedEventHandler PropertyChanged;
 
-        private Action<PropertyChangedEventArgs> RaisePropertyChanged()
-        {
-            return args => PropertyChanged?.Invoke(this, args);
-        }
+        private Action<PropertyChangedEventArgs> RaisePropertyChanged() => args => PropertyChanged?.Invoke(this, args);
     }
 }

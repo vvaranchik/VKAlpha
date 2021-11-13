@@ -32,6 +32,7 @@ namespace VKAlpha.ViewModels
                 if (tsk.Result.IsEmpty())
                 {
                     MainViewModelLocator.MainViewModel.MessageQueue.Enqueue(MainViewModelLocator.AppLang.AccessDenied);
+                    if (!Navigation.Get.Service.CanGoBack) { Navigation.Get.GoBackExtra(); return; }
                     Navigation.Get.GoBack();
                     return;
                 }

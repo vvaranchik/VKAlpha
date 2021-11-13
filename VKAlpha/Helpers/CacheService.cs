@@ -49,7 +49,6 @@ namespace VKAlpha.Helpers
                 await writer.FlushAsync();
             }
 
-            //just to make sure
             if (File.Exists(path))
                 return await GetCachedImage(path, model);
 

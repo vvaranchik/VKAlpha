@@ -66,7 +66,7 @@
                             <Setter Property="TextElement.Foreground" TargetName="Bd" Value="{DynamicResource {x:Static SystemColors.GrayTextBrushKey}}"/>
                         </Trigger>
                         <Trigger Property="IsMouseOver" Value="True">
-                            <Setter Property="Background" TargetName="Bd" Value="{DynamicResource HotPlaylistItemBackgroundBrush}"/>
+                            <Setter Property="Background" TargetName="Bd" Value="{Binding Theme.listboxItemHovered, Source={StaticResource MainLocator}}"/>
                         </Trigger>
                     </ControlTemplate.Triggers>
                 </ControlTemplate>
@@ -106,6 +106,7 @@
                                 <Condition Property="IsMouseOver" Value="True"/>
                             </MultiTrigger.Conditions>
                             <Setter Property="BorderBrush" TargetName="Bd" Value="{DynamicResource AccentBrush}"/>
+                            <Setter Property="Background" TargetName="Bd" Value="{Binding Theme.listboxItemHovered, Source={StaticResource MainLocator}}"/>
                         </MultiTrigger>
                         <Trigger Property="IsEnabled" Value="False">
                             <Setter Property="TextElement.Foreground" TargetName="Bd" Value="{DynamicResource {x:Static SystemColors.GrayTextBrushKey}}"/>
@@ -274,8 +275,7 @@
         </Button>
     </DataTemplate>
     <DataTemplate x:Key="LocalAudioItemTemplate">
-        <Button Style="{StaticResource SimpleButtonStyle}" Command="{Binding DataContext.PlayCommand, ElementName=AudiosListV}" CommandParameter="{Binding FullData}"
-                Padding="0,5,0,5" MaxHeight="32" >
+        <Button Style="{StaticResource SimpleButtonStyle}" Command="{Binding DataContext.PlayCommand, ElementName=AudiosListV}" CommandParameter="{Binding FullData}" Padding="0,5,0,5" MaxHeight="32">
             <Button.RenderTransform>
                 <TranslateTransform />
             </Button.RenderTransform>

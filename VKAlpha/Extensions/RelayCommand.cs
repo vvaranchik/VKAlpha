@@ -20,14 +20,8 @@ namespace VKAlpha.Extensions
             this.canExecute = canExecute;
         }
 
-        public bool CanExecute(object parameter)
-        {
-            return canExecute == null ? true : canExecute(parameter);
-        }
-
-        public void Execute(object parameter)
-        {
-            this.execute(parameter);
-        }
+        public bool CanExecute(object parameter) => canExecute == null ? true : canExecute(parameter);
+        
+        public void Execute(object parameter) => this.execute(parameter);
     }
 }

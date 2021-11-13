@@ -95,6 +95,7 @@ namespace VKAlpha.BASS
         {
             if (!Bass.LoadMe())
             {
+                System.Windows.MessageBox.Show("VK Alpha could not locate 'bass.dll' in its working directory. Reinstall app, if error persist - report on git.", "ERROR", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Error);
                 throw new DllNotFoundException("VK Alpha could not locate 'bass.dll' in its working directory. Reinstall app, if error persist - report on git.");
             }
             
@@ -115,19 +116,16 @@ namespace VKAlpha.BASS
 
         private void onDeviceChange(int handle, int channel, int data, IntPtr user)
         {
-            var shouldContinue = false;
+            var shouldContinue = IsPlaying;
             if (IsPlaying)
             {
-                shouldContinue = true;
                 PauseResume();
             }
 
             var isDeviceChanged = tryChangeDevice();
-            int noDevice = 5;
-            while (!isDeviceChanged || noDevice != 0)
+            for(var attempts = 5; attempts > 0 && !isDeviceChanged; --attempts)
             {
                 isDeviceChanged = tryChangeDevice();
-                --noDevice;
             }
             if (isDeviceChanged)
             {
@@ -160,9 +158,9 @@ namespace VKAlpha.BASS
                 if (_playing) _playing = false;
                 if (stream != 0) Bass.BASS_StreamFree(stream);
             }
+            WindowsMediaControls.ChangeState(MediaPlaybackStatus.Stopped);
             if (!dispose)
                 return;
-            WindowsMediaControls.ChangeState(MediaPlaybackStatus.Stopped);
             MainViewModelLocator.Discord?.destroy();
             WindowsMediaControls.Dispose();
             _sliderUpdate.Stop();
@@ -173,11 +171,11 @@ namespace VKAlpha.BASS
 
         public void SelectTrack(string data)
         {
-            for (var i = 0; i < MainViewModelLocator.PlaylistControl.PlayingPlaylist.Count; i++)
+            foreach (var track in MainViewModelLocator.PlaylistControl.PlayingPlaylist)
             {
-                if (data != MainViewModelLocator.PlaylistControl.PlayingPlaylist[i].FullData)
+                if (track.FullData != data)
                     continue;
-                nowPlaying = i;
+                nowPlaying = MainViewModelLocator.PlaylistControl.PlayingPlaylist.IndexOf(track);
                 break;
             }
         }
@@ -202,6 +200,16 @@ namespace VKAlpha.BASS
                 if (!is_bass_loaded)
                 {
                     Bass.BASS_Init(-1, 48000, BASSInit.BASS_DEVICE_STEREO, MainWindow.Handle);
+                    var plugin_load = Bass.BASS_PluginLoad("basshls.dll");
+                    switch ((BASSError)plugin_load)
+                    {
+                        case BASSError.BASS_ERROR_FILEOPEN:
+                            System.Windows.MessageBox.Show("Cant open file \'basshls.dll\'");
+                            throw new DllNotFoundException("Cant open file \'basshls.dll\'");
+                        case BASSError.BASS_ERROR_FILEFORM:
+                            System.Windows.MessageBox.Show("File \'basshls.dll\' is not a plugin file");
+                            throw new AggregateException("File \'basshls.dll\' is not a plugin file");
+                    }
                     is_bass_loaded = true;
                 }
                     
@@ -295,9 +303,6 @@ namespace VKAlpha.BASS
             return args => PropertyChanged?.Invoke(this, args);
         }
 
-        private void OnPropChanged([CallerMemberName] string name = null)
-        {
-            PropertyChanged.Invoke(this, new PropertyChangedEventArgs(name));
-        }
+        private void OnPropChanged([CallerMemberName] string name = null) => PropertyChanged.Invoke(this, new PropertyChangedEventArgs(name));
     }
 }

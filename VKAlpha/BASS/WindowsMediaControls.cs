@@ -21,32 +21,18 @@ namespace VKAlpha.BASS
         {
             switch (args.Button)
             {
-                case SystemMediaTransportControlsButton.Record:
-                case SystemMediaTransportControlsButton.FastForward:
-                case SystemMediaTransportControlsButton.Rewind:
-                    break;
                 case SystemMediaTransportControlsButton.Stop:
                     Dispatcher.CurrentDispatcher.Invoke(() => MainViewModelLocator.BassPlayer.Stop());
                     break;
                 case SystemMediaTransportControlsButton.Play:
                 case SystemMediaTransportControlsButton.Pause:
-                   Dispatcher.CurrentDispatcher.Invoke(() =>
-                   {
-                       MainViewModelLocator.BassPlayer.PauseResume(true);
-                   }
-                   );
+                   Dispatcher.CurrentDispatcher.Invoke(() => MainViewModelLocator.BassPlayer.PauseResume(true));
                     break;
                 case SystemMediaTransportControlsButton.Next:
                     Dispatcher.CurrentDispatcher.Invoke(() => MainViewModelLocator.BassPlayer.Next());
                     break;
                 case SystemMediaTransportControlsButton.Previous:
                     Dispatcher.CurrentDispatcher.Invoke(() => MainViewModelLocator.BassPlayer.Prev());
-                    break;
-                case SystemMediaTransportControlsButton.ChannelUp:
-                    //Dispatcher.CurrentDispatcher.Invoke(() => MainViewModelLocator.BassPlayer.Volume += 0.05f);
-                    break;
-                case SystemMediaTransportControlsButton.ChannelDown:
-                    //Dispatcher.CurrentDispatcher.Invoke(() => MainViewModelLocator.BassPlayer.Volume -= 0.05f);
                     break;
             }
         }

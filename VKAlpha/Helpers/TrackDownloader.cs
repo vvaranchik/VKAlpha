@@ -28,7 +28,6 @@ namespace VKAlpha.Helpers
                 if (File.Exists(path))
                 {
                     MainViewModelLocator.MainViewModel.MessageQueue.Enqueue($"{item.FullData} already downloaded!");
-                    tcs.SetResult(item.Id);
                 }
                 else
                 {
@@ -43,6 +42,7 @@ namespace VKAlpha.Helpers
                     }
                     MainViewModelLocator.MainViewModel.MessageQueue.Enqueue($"{item.FullData} Download completed");
                 }
+                tcs.SetResult(item.Id);
 
             });
             return tcs.Task;

@@ -7,14 +7,13 @@ namespace VKAlpha.BASS
 {
     public class PlaylistControl
     {
+        public PlaylistControl() { }
+
         private bool shuffled = false;
 
-        public ObservableCollection<AudioModel> PlayingPlaylist { get; private set; }
+        public bool RequstShuffle { get; set; } = false;
 
-        public PlaylistControl()
-        {
-            PlayingPlaylist = new ObservableCollection<AudioModel>();
-        }
+        public ObservableCollection<AudioModel> PlayingPlaylist { get; private set; } = new ObservableCollection<AudioModel>();
         
         private void LoadPlayingPlaylist(ICollection<AudioModel> collection)
         {
@@ -30,15 +29,7 @@ namespace VKAlpha.BASS
 
         public void CheckPlaylist(ICollection<AudioModel> collection)
         {
-            if (PlayingPlaylist.FirstOrDefault() == default(AudioModel))
-            {
-                LoadPlayingPlaylist(collection);
-            }
-            else if (collection.First().OwnerId != PlayingPlaylist[0].OwnerId)
-            {
-                LoadPlayingPlaylist(collection);
-            }
-            else if (collection.First().OwnerId == PlayingPlaylist[0].OwnerId && collection.First().Id != PlayingPlaylist[0].Id)
+            if (PlayingPlaylist.FirstOrDefault() == default(AudioModel) || collection.First().OwnerId != PlayingPlaylist[0].OwnerId || (collection.First().OwnerId == PlayingPlaylist[0].OwnerId && collection.First().Id != PlayingPlaylist[0].Id))
             {
                 LoadPlayingPlaylist(collection);
             }
@@ -57,7 +48,7 @@ namespace VKAlpha.BASS
             string data = Helpers.MainViewModelLocator.BassPlayer.CurrentTrack.FullData;
             if (Helpers.MainViewModelLocator.BassPlayer.IsShuffled)
             {
-                if (shuffled)
+                if (shuffled && !RequstShuffle)
                     return;
                 shuffled = true;
                 PlayingPlaylist.Shuffle();
@@ -67,6 +58,7 @@ namespace VKAlpha.BASS
                 PlayingPlaylist = new ObservableCollection<AudioModel>(PlayingPlaylist.OrderByDescending(d => d.Date));
                 shuffled = false;
             }
+            RequstShuffle = false;
             Helpers.MainViewModelLocator.BassPlayer.SelectTrack(data);
         }
     }
