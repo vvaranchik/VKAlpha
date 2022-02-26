@@ -122,6 +122,12 @@ namespace VKAlpha.BASS
 
         public static void Dispose()
         {
+            systemMediaControls.ButtonPressed -= MediaButtonPressed;
+            systemMediaControls.PlaybackPositionChangeRequested -= PlaybackPositionChangeRequested;
+            systemMediaControls.PlaybackRateChangeRequested -= PlaybackRateChangeRequested;
+            systemMediaControls.ShuffleEnabledChangeRequested -= ShuffleEnabledChangeRequested;
+            systemMediaControls.AutoRepeatModeChangeRequested -= AutoRepeatModeChangeRequested;
+
             SetArtworkThumbnail(null);
             displayUpdater.ClearAll();
             systemMediaControls = null;

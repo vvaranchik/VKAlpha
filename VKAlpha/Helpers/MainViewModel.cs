@@ -187,10 +187,13 @@ namespace VKAlpha.Helpers
                 return await MainViewModelLocator.Vk.VkAudio.GetPlaylists((long)userId);
             }).ContinueWith((tsk) =>
             {
-                var result = tsk.Result;
-                if (result.Size() > 0)
+                if (tsk.Result != null)
                 {
-                    SideBarItems[category].TreeContent.Add(new DrawerItem(MainViewModelLocator.AppLang.Playlists, new RelayCommand((o) => Navigation.Get.Navigate("PlaylistsView", new ViewModels.PlaylistsViewModel(userId)) )));
+                    var result = tsk.Result;
+                    if (result.Size() > 0)
+                    {
+                        SideBarItems[category].TreeContent.Add(new DrawerItem(MainViewModelLocator.AppLang.Playlists, new RelayCommand((o) => Navigation.Get.Navigate("PlaylistsView", new ViewModels.PlaylistsViewModel(userId)))));
+                    }
                 }
             }, TaskScheduler.FromCurrentSynchronizationContext());
         }

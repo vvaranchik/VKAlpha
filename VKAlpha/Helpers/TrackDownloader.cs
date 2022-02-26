@@ -23,15 +23,20 @@ namespace VKAlpha.Helpers
             {
                 if (!Directory.Exists("./Cache/downloads/"))
                     Directory.CreateDirectory("./Cache/downloads/");
-                var fileName = CacheService.GetSafeFileName(item.FullData);
-                var path = Path.Combine("Cache", $"downloads/{fileName}.mp3");
+                var trackData = item.FullData;
+                if (trackData.Length > 20)
+                {
+                    trackData = trackData.Substring(0, 16) + "...";
+                }
+                var fileName = CacheService.GetSafeFileName(trackData);
+                var path = Path.Combine("Cache", $"downloads/{trackData}.mp3");
                 if (File.Exists(path))
                 {
-                    MainViewModelLocator.MainViewModel.MessageQueue.Enqueue($"{item.FullData} already downloaded!");
+                    MainViewModelLocator.MainViewModel.MessageQueue.Enqueue($"{trackData} already downloaded!");
                 }
                 else
                 {
-                    MainViewModelLocator.MainViewModel.MessageQueue.Enqueue($"Starting download {item.FullData}");
+                    MainViewModelLocator.MainViewModel.MessageQueue.Enqueue($"Starting download {trackData}");
                     using(var writer = File.OpenWrite(path))
                     {
                         var client = new RestClient(new Uri(item.Url));
@@ -40,7 +45,7 @@ namespace VKAlpha.Helpers
                         client.DownloadData(request);
                         writer.Flush();
                     }
-                    MainViewModelLocator.MainViewModel.MessageQueue.Enqueue($"{item.FullData} Download completed");
+                    MainViewModelLocator.MainViewModel.MessageQueue.Enqueue($"{trackData} Download completed");
                 }
                 tcs.SetResult(item.Id);
 

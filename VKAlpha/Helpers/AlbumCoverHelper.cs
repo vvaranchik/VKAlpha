@@ -6,9 +6,10 @@ namespace VKAlpha.Helpers
 {
     public static class CoverHelper
     {
-        private static string path;
         private static CancellationTokenSource token = new CancellationTokenSource();
         private static bool isRequesting = false;
+
+        private static readonly string[] separators = new[] { ",", "&", "&&", "feat", "feat.", "ft", "ft."/*, "("*/ };
 
         public static void CancelCover()
         {
@@ -27,7 +28,7 @@ namespace VKAlpha.Helpers
             Process(token.Token, model);
         }
 
-        private async static void Process(CancellationToken token, AudioModel model) 
+        private async static void Process(CancellationToken token, AudioModel model)
         {
             if (token.IsCancellationRequested)
             {
@@ -40,7 +41,7 @@ namespace VKAlpha.Helpers
                 Directory.CreateDirectory("./Cache/covers/");
             }
 
-            path = Path.Combine("Cache", $"covers/{model.Id}.jpg");
+            var path = Path.Combine("Cache", $"covers/{model.Id}.jpg");
 
             if (token.IsCancellationRequested)
             {
@@ -50,13 +51,23 @@ namespace VKAlpha.Helpers
 
             if (File.Exists(path))
             {
-                model.Cover = await CacheService.GetCachedImage(path, model);
+                await CacheService.GetCachedImage(path, model);
                 isRequesting = false;
                 return;
             }
 
-            var imageUri = await MainViewModelLocator.SpotifyHelper.Covers.GetAlbumCover(model.Artist, model.Title);
-            if (imageUri != null)
+            if (token.IsCancellationRequested)
+            {
+                CancelCover();
+                return;
+            }
+
+            var imageUri = await MainViewModelLocator.SpotifyHelper.Covers.GetAlbumCover(
+                model.Artist
+                    .Replace(new[] {'[',']'})
+                    .Split(separators, System.StringSplitOptions.RemoveEmptyEntries)[0], 
+                model.Title);
+            if (!string.IsNullOrEmpty(imageUri.GetResult()))
             {
                 if (token.IsCancellationRequested)
                 {

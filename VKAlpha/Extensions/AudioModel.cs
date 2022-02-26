@@ -1,5 +1,4 @@
-﻿using System.Collections.Generic;
-using System.Collections.ObjectModel;
+﻿using System.Collections.ObjectModel;
 using System.ComponentModel;
 using VKAlpha.BASS;
 using VKAlpha.Helpers;
@@ -15,13 +14,24 @@ namespace VKAlpha.Extensions
 
         private string CoverPath => System.IO.Path.Combine("Cache", $"covers/{Id}.jpg");
 
-        public byte[] ImageByteData 
+        public byte[] ImageByteData
         {
             get => _bitmapImage;
             set => this.MutateVerbose(ref _bitmapImage, value, RaisePropertyChanged());
         }
 
-        public System.Windows.Media.ImageSource Cover 
+        private System.Windows.Media.ImageSource GetCoverFromBytes()
+        {
+            if (ImageByteData == null)
+                return null;
+            var bi = new System.Windows.Media.Imaging.BitmapImage();
+            bi.BeginInit();
+            bi.StreamSource = new System.IO.MemoryStream(ImageByteData);
+            bi.EndInit();
+            return bi;
+        }
+
+        public System.Windows.Media.ImageSource Cover
         {
             get
             {
@@ -31,7 +41,7 @@ namespace VKAlpha.Extensions
                     GetCover();
                 }
                 WindowsMediaControls.SetArtworkThumbnail(ImageByteData);
-                return _cover;
+                return _cover ?? GetCoverFromBytes();
             }
             set => this.MutateVerbose(ref _cover, value, RaisePropertyChanged());
         }
@@ -57,33 +67,17 @@ namespace VKAlpha.Extensions
         {
             var collection = new Collection<AudioModel>();
             foreach (MonoVKLib.VK.Models.VKAudioModel vkAudio in vkCollection)
-            {
-                collection.Add(new AudioModel()
-                {
-                    AlbumId = vkAudio.AlbumId,
-                    Artist = vkAudio.Artist,
-                    Title = vkAudio.Title,
-                    Cover = null,
-                    ImageByteData = null,
-                    Date = vkAudio.Date,
-                    Duration = vkAudio.Duration,
-                    GenreId = vkAudio.GenreId,
-                    Id = vkAudio.Id,
-                    LyricsId = vkAudio.LyricsId,
-                    OwnerId = vkAudio.OwnerId,
-                    Url = vkAudio.Url
-                });
-            }
+                collection.Add(VKModelToAudio(vkAudio));
+
             return collection;
         }
 
         private void GetCover()
         {
-            if (requesting || string.IsNullOrEmpty(CoverPath) || Artist == "Artist")
+            if (!MainViewModelLocator.Settings.load_track_covers || requesting || string.IsNullOrEmpty(CoverPath) || Artist == "Artist")
                 return;
 
             requesting = true;
-
             CoverHelper.RequestCover(this);
         }
 

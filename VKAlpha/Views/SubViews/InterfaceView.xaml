@@ -17,16 +17,15 @@
         </Grid.ColumnDefinitions>
         <StackPanel Grid.Column="0" Orientation="Vertical">
             <TextBlock TextAlignment="Left" FontSize="23" FontWeight="Medium" Margin="10 50 0 0" Text="Images" Foreground="{Binding Theme.ForegroundMenu,Source={StaticResource MainLocator}}" Grid.Column="0"/>
-            <TextBlock TextAlignment="Left" FontSize="15" FontWeight="Regular" Margin="25 10 0 0" Text="Load track cover" IsEnabled="False" Foreground="{Binding Theme.ForegroundMenu,Source={StaticResource MainLocator}}" Grid.Column="0"/>
-            <TextBlock TextAlignment="Left" FontSize="15" FontWeight="Regular" Margin="25 10 0 0" Text="Load avatars" IsEnabled="False" Foreground="{Binding Theme.ForegroundMenu,Source={StaticResource MainLocator}}" Grid.Column="0"/>
+            <TextBlock TextAlignment="Left" FontSize="15" FontWeight="Regular" Margin="25 10 0 0" Text="Load track covers" IsEnabled="False" Foreground="{Binding Theme.ForegroundMenu,Source={StaticResource MainLocator}}" Grid.Column="0"/>
+            <TextBlock TextAlignment="Left" FontSize="15" FontWeight="Regular" Margin="25 10 0 0" Text="Cache track covers" IsEnabled="False" Foreground="{Binding Theme.ForegroundMenu,Source={StaticResource MainLocator}}" Grid.Column="0"/>
             <TextBlock TextAlignment="Left" FontSize="23" FontWeight="Medium" Margin="10 50 0 0" Text="{Binding AppLang.AppearanceCat,Source={StaticResource MainLocator}}" Foreground="{Binding Theme.ForegroundMenu,Source={StaticResource MainLocator}}" Grid.Column="0"/>
             <TextBlock TextAlignment="Left" FontSize="15" FontWeight="Regular" Margin="25 10 0 0" Text="{Binding AppLang.CurrentTheme,Source={StaticResource MainLocator}}" Foreground="{Binding Theme.ForegroundMenu,Source={StaticResource MainLocator}}" Grid.Column="0"/>
             <TextBlock TextAlignment="Left" FontSize="15" FontWeight="Regular" Margin="25 10 0 0" Text="{Binding AppLang.Language,Source={StaticResource MainLocator}}" Foreground="{Binding Theme.ForegroundMenu,Source={StaticResource MainLocator}}" Grid.Column="0"/>
         </StackPanel>
         <StackPanel Grid.Column="1" Orientation="Vertical">
-            <ToggleButton IsChecked="{Binding Settings.load_track_covers, Source={StaticResource MainLocator}, Mode=TwoWay}" Foreground="{Binding Theme.checkBoxUncheked, Source={StaticResource MainLocator}}" HorizontalAlignment="Left" Margin="0 90 0 0">
-            </ToggleButton>
-            <ToggleButton IsChecked="{Binding Settings.load_user_avatars, Source={StaticResource MainLocator}}" Foreground="{Binding Theme.checkBoxUncheked, Source={StaticResource MainLocator}}" HorizontalAlignment="Left" Margin="0 13 0 0"/>
+            <ToggleButton IsChecked="{Binding LoadTrackCovers}" Foreground="{Binding Theme.checkBoxUncheked, Source={StaticResource MainLocator}}" HorizontalAlignment="Left" Margin="0 90 0 0"/>
+            <ToggleButton IsEnabled="{Binding LoadTrackCovers}" IsChecked="{Binding CacheTrackCovers}" Foreground="{Binding Theme.checkBoxUncheked, Source={StaticResource MainLocator}}" HorizontalAlignment="Left" Margin="0 13 0 0"/>
             <ComboBox ItemsSource="{Binding Themes}" SelectedItem="{Binding CurrentTheme}" HorizontalAlignment="Left" Margin="0 90 0 0" Foreground="{Binding Theme.ForegroundMenu,Source={StaticResource MainLocator}}"/>
             <ComboBox ItemsSource="{Binding Languages}" SelectedItem="{Binding CurrentLang}" HorizontalAlignment="Left" Margin="0 0 0 0" Foreground="{Binding Theme.ForegroundMenu,Source={StaticResource MainLocator}}"/>
         </StackPanel>

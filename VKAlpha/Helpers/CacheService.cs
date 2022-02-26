@@ -1,5 +1,4 @@
-﻿using RestSharp;
-using System;
+﻿using System;
 using System.IO;
 using System.Threading.Tasks;
 using System.Windows.Media;
@@ -30,28 +29,45 @@ namespace VKAlpha.Helpers
                 model.ImageByteData = ms.GetBuffer();
                 return bi;
             }
-
             BASS.WindowsMediaControls.SetArtworkThumbnail(null);
             return null;
         }
 
         public static async Task<ImageSource> SetCover(string url, string path, AudioModel model)
         {
-            if (string.IsNullOrEmpty(url))
+            if (string.IsNullOrEmpty(url) || string.IsNullOrEmpty(path))
                 return null;
-
-            using(var writer = File.OpenWrite(path))
+            System.Windows.Media.Imaging.BitmapImage image = null;
+            if (MainViewModelLocator.Settings.load_track_covers)
             {
-                var client = new RestClient(new Uri(url));
-                var request = new RestRequest(Method.GET);
-                request.ResponseWriter = stream => { using (stream) { stream.CopyTo(writer); } }; 
-                client.DownloadData(request);
-                await writer.FlushAsync();
+                if (!File.Exists(path))
+                {
+                    if (model.ImageByteData != null)
+                    {
+                        image = new System.Windows.Media.Imaging.BitmapImage();
+                        image.BeginInit();
+                        image.StreamSource = new MemoryStream(model.ImageByteData);
+                        image.EndInit();
+                    }
+                    else
+                    {
+                        image = await url.GetImageSource();
+                        var bytes = image.ToByteArray();
+
+                        if (MainViewModelLocator.Settings.cache_track_covers)
+                        {
+                            using (var writer = File.OpenWrite(path))
+                            {
+                                await writer.WriteAsync(bytes, 0, bytes.Length);
+                                await writer.FlushAsync();
+                            }
+                        }
+                        model.ImageByteData = bytes;
+                    }
+                    return image;
+                }
+                else return await GetCachedImage(path, model);
             }
-
-            if (File.Exists(path))
-                return await GetCachedImage(path, model);
-
             return null;
         }
 

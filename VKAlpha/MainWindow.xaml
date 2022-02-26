@@ -21,7 +21,7 @@
         FontFamily="{DynamicResource MaterialDesignFont}"
         GlowBrush="{StaticResource VKColor}"
         BorderThickness="1"
-        Title="VK Alpha" MinHeight="600" MinWidth="850" Initialized="MetroWindow_Initialized" WindowTitleBrush="RoyalBlue" Name="MainWnd">
+        Title="VK Alpha" MinHeight="600" MinWidth="915" Initialized="MetroWindow_Initialized" WindowTitleBrush="RoyalBlue" Name="MainWnd">
     <Window.Resources>
         <Style TargetType="{x:Type ToggleButton}" BasedOn="{StaticResource MaterialDesignActionDarkToggleButton}">
             <Setter Property="Background" Value="Transparent"/>
@@ -34,98 +34,24 @@
         <Style TargetType="{x:Type Slider}" BasedOn="{StaticResource MaterialDesignSlider}"/>
     </Window.Resources>
     <md:DialogHost Name="RootDialog" Identifier="RootDialog" SnackbarMessageQueue="{Binding ElementName=MainSnackbar, Path=MessageQueue}">
-        <!--
-        <md:DrawerHost IsLeftDrawerOpen="{Binding Source={x:Reference Name=MenuToggleButton}, Path=IsChecked}">
-            <md:DrawerHost.LeftDrawerContent>
-                <DockPanel MinWidth="212">
-                    <ToggleButton Style="{StaticResource MaterialDesignHamburgerToggleButton}" 
-                                    DockPanel.Dock="Top"
-                                    HorizontalAlignment="Right" Margin="16"
-                                    IsChecked="{Binding Source={x:Reference Name=MenuToggleButton}, Path=IsChecked, Mode=TwoWay}" />
-                    <ListBox x:Name="LBDrawer" Margin="0 16 0 16" SelectedIndex="0"
-                             ItemsSource="{Binding DrawerItems}" >
-                        <i:Interaction.Triggers>
-                            <i:EventTrigger EventName="MouseLeftButtonUp">
-                                <i:InvokeCommandAction Command="{Binding DrawerItemSelected}" CommandParameter="{Binding RelativeSource={RelativeSource Mode=FindAncestor,AncestorType=ListBox}, Path=SelectedIndex}"/>
-                            </i:EventTrigger>
-                        </i:Interaction.Triggers>
-                        <ListBox.Resources>
-                            <Style TargetType="ScrollBar" />
-                        </ListBox.Resources>
-                        <ListBox.ItemTemplate>
-                            <DataTemplate DataType="draweritems:DrawerItem">
-                                <StackPanel Orientation="Horizontal">
-                                    <md:PackIcon Kind="{Binding Icon}" Margin="32 0 8 0" />
-                                    <TextBlock Text="{Binding Name}"  />
-                                </StackPanel>
-                            </DataTemplate>
-                        </ListBox.ItemTemplate>
-                    </ListBox>
-                </DockPanel>
-            </md:DrawerHost.LeftDrawerContent>
-            <DockPanel>
-                <md:ColorZone Padding="16" md:ShadowAssist.ShadowDepth="Depth2" Name="ColorZone"
-                              Mode="Standard" Background="{StaticResource VKColor}" DockPanel.Dock="Top" Foreground="White">
-                    <DockPanel>
-                        <ToggleButton Style="{StaticResource MaterialDesignHamburgerToggleButton}" IsChecked="False"
-                                        x:Name="MenuToggleButton" HorizontalAlignment="Left"/>
-                        <Grid>
-                            <Button Name="btnFriendsBack" VerticalAlignment="Center" Background="Transparent" Margin="35,0,0,0" HorizontalAlignment="Left" BorderThickness="0" Command="{Binding GoBack}" Visibility="Collapsed">
-                                <StackPanel Orientation="Horizontal">
-                                    <md:PackIcon Kind="ArrowLeftBoldCircleOutline" Height="20" Width="20"/>
-                                    <TextBlock Margin="5 2 0 0" Text="Back to Dmitris friends"/>
-                                </StackPanel>
-                            </Button>
-                            <StackPanel Orientation="Horizontal" md:RippleAssist.IsCentered="True">
-                                <md:ColorZone Mode="Standard" Padding="8 4 8 4" CornerRadius="2" Margin="35 0 0 0" md:ShadowAssist.ShadowDepth="Depth1" Name="clZoneSearch" >
-                                    <Grid>
-                                        <Grid.ColumnDefinitions>
-                                            <ColumnDefinition Width="Auto" />
-                                            <ColumnDefinition Width="*" />
-                                            <ColumnDefinition Width="Auto" />
-                                        </Grid.ColumnDefinitions>
-                                        <Button Style="{DynamicResource MaterialDesignToolButton}">
-                                            <md:PackIcon Kind="Magnify" Opacity=".56" />
-                                        </Button>
-                                        <TextBox Grid.Column="1" Margin="8 0 0 0" md:HintAssist.Hint="Search query" md:TextFieldAssist.DecorationVisibility="Hidden" BorderThickness="0" MinWidth="200" VerticalAlignment="Center" />
-                                    </Grid>
-                                </md:ColorZone>
-                                <Button Style="{DynamicResource MaterialDesignToolForegroundButton}" Margin="8 0 0 0" Panel.ZIndex="0">
-                                    <md:PackIcon Kind="Send" />
-                                </Button>
-                            </StackPanel>
-                        </Grid>
-                    </DockPanel>
-                </md:ColorZone>
-                <Grid>
-                    <Grid.RowDefinitions>
-                        <RowDefinition Height="Auto" />
-                        <RowDefinition Height="*" />
-                    </Grid.RowDefinitions>
-                    <ScrollViewer Grid.Row="1" 
-                                  HorizontalScrollBarVisibility="{Binding ElementName=LBDrawer, Path=SelectedItem.HorizontalScrollBarVisibilityRequirement}"
-                                  VerticalScrollBarVisibility="{Binding ElementName=LBDrawer, Path=SelectedItem.VerticalScrollBarVisibilityRequirement}" 
-                                  Padding="{Binding ElementName=LBDrawer, Path=SelectedItem.MarginRequirement}">
-                        <Frame x:Name="MainFrame" NavigationUIVisibility="Hidden" />
-                    </ScrollViewer>
-                    <md:Snackbar MessageQueue="{md:MessageQueue}" x:Name="MainSnackbar" Grid.Row="1" />
-                </Grid>
-            </DockPanel>
-        </md:DrawerHost>
-        -->
         <Grid x:Name="GridMain" Background="{Binding Theme.MainBackground, Source={StaticResource MainLocator}}">
             <Grid.RowDefinitions>
                 <RowDefinition Height="*"/>
                 <RowDefinition Height="auto"/>
             </Grid.RowDefinitions>
             <DockPanel Grid.Row="1">
-                <md:ColorZone Visibility="{Binding SidebarVisible, Converter={StaticResource NullToVisibilityConventer}}" DockPanel.Dock="Bottom" Padding="16" 
-                              md:ShadowAssist.ShadowDepth="Depth2" Name="ColorZone" Mode="Standard" Background="{Binding Theme.BelowMain, Source={StaticResource MainLocator}}" Foreground="White">
+                <md:ColorZone Visibility="{Binding SidebarVisible, Converter={StaticResource NullToVisibilityConventer}}" 
+                              DockPanel.Dock="Bottom" 
+                              Padding="16" 
+                              md:ShadowAssist.ShadowDepth="Depth2"
+                              Mode="Standard" 
+                              Background="{Binding Theme.BelowMain, Source={StaticResource MainLocator}}" 
+                              Foreground="White">
                     <Grid>
                         <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="225"/>
+                            <ColumnDefinition Width="1*" MaxWidth="650"/>
+                            <ColumnDefinition MinWidth="400"/>
                             <ColumnDefinition Width="1*"/>
-                            <ColumnDefinition Width="225"/>
                         </Grid.ColumnDefinitions>
                         <Grid Grid.Column="0" VerticalAlignment="Center">
                             <Grid.ColumnDefinitions>
@@ -137,7 +63,7 @@
                             <TextBlock PreviewMouseUp="TextBlock_PreviewMouseUp" Foreground="{Binding Theme.PlayerForegroundBottom, Source={StaticResource MainLocator}}" Text="{Binding BassPlayer.CurrentTrack.Title, Source={StaticResource MainLocator}}" ToolTip="{Binding BassPlayer.CurrentTrack.Title, Source={StaticResource MainLocator}}" TextTrimming="CharacterEllipsis" FontSize="16" Grid.Column="1" Margin="10,10,0,0"/>
                             <TextBlock Foreground="{Binding Theme.PlayerForegroundBottom, Source={StaticResource MainLocator}}" Text="{Binding BassPlayer.CurrentTrack.Artist, Source={StaticResource MainLocator}}" ToolTip="{Binding BassPlayer.CurrentTrack.Artist, Source={StaticResource MainLocator}}" TextTrimming="CharacterEllipsis" FontSize="16" Grid.Column="1" Margin="10,38,0,0"/>
                         </Grid>
-                        <StackPanel Orientation="Vertical" Grid.Column="1" VerticalAlignment="Center" Margin="10,2">
+                        <StackPanel Orientation="Vertical" Grid.Column="1" VerticalAlignment="Center" Margin="42,0,0,0" >
                             <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
                                 <ToggleButton Margin="0 0 15 0" Width="32" Height="32" IsChecked="{Binding BassPlayer.IsShuffled, Source={StaticResource MainLocator}}">
                                     <md:PackIcon Foreground="{Binding Theme.checkBoxUncheked, Source={StaticResource MainLocator}}" Kind="ShuffleVariant" Width="32" Height="32" ToolTip="{Binding AppLang.ShuffleOff, Source={StaticResource MainLocator}}"/>
@@ -145,8 +71,8 @@
                                         <md:PackIcon Foreground="{Binding Theme.checkBoxChecked, Source={StaticResource MainLocator}}" Kind="ShuffleVariant" Width="32" Height="32" ToolTip="{Binding AppLang.ShuffleOn, Source={StaticResource MainLocator}}"/>
                                     </md:ToggleButtonAssist.OnContent>
                                 </ToggleButton>
-                                <Button Style="{DynamicResource SimpleButtonV2}" Background="Transparent" Height="32" Width="32" Command="{Binding SkipPrev}" ToolTip="{Binding AppLang.Prev, Source={StaticResource MainLocator}}">
-                                    <md:PackIcon Kind="SkipPrevious" Width="32" Height="32"/>
+                                <Button Style="{DynamicResource SimpleButtonV2}" Background="Transparent" Command="{Binding SkipPrev}" ToolTip="{Binding AppLang.Prev, Source={StaticResource MainLocator}}">
+                                    <md:PackIcon Kind="SkipPrevious" Width="32" Height="28"/>
                                 </Button>
                                 <ToggleButton Margin="15 0 15 0" Width="32" Height="32" IsChecked="{Binding BassPlayer.IsPlaying, Source={StaticResource MainLocator}, Mode=TwoWay}" Command="{Binding PlayCommand}">
                                     <md:PackIcon Kind="PlayCircleOutline" Width="32" Height="32" ToolTip="{Binding AppLang.Play, Source={StaticResource MainLocator}}"/>
@@ -154,8 +80,8 @@
                                         <md:PackIcon Kind="PauseCircleOutline" Width="32" Height="32" ToolTip="{Binding AppLang.Pause, Source={StaticResource MainLocator}}"/>
                                     </md:ToggleButtonAssist.OnContent>
                                 </ToggleButton>
-                                <Button Style="{DynamicResource SimpleButtonV2}" Background="Transparent" Height="32" Width="32" Command="{Binding SkipNext}" ToolTip="{Binding AppLang.Next, Source={StaticResource MainLocator}}">
-                                    <md:PackIcon Kind="SkipNext" Width="32" Height="32"/>
+                                <Button Style="{DynamicResource SimpleButtonV2}" Background="Transparent"  Command="{Binding SkipNext}" ToolTip="{Binding AppLang.Next, Source={StaticResource MainLocator}}">
+                                    <md:PackIcon Kind="SkipNext" Width="32" Height="28"/>
                                 </Button>
                                 <ToggleButton Margin="15 0 15 0" Width="32" Height="32" IsChecked="{Binding BassPlayer.IsRepeated, Source={StaticResource MainLocator}}">
                                     <md:PackIcon Foreground="{Binding Theme.checkBoxUncheked, Source={StaticResource MainLocator}}" Kind="Loop" Width="32" Height="32" ToolTip="{Binding AppLang.RepeatOn, Source={StaticResource MainLocator}}"/>
@@ -176,7 +102,7 @@
                                         Value="{Binding BassPlayer.SliderValue, Source={StaticResource MainLocator}, Mode=TwoWay}" Maximum="{Binding BassPlayer.CurrentTrack.Duration.TotalSeconds, Source={StaticResource MainLocator}}" Grid.Column="1"/>
                             </Grid>
                         </StackPanel>
-                        <StackPanel HorizontalAlignment="Right" Grid.Column="2" Orientation="Horizontal" Margin="15 0 5 0">
+                        <StackPanel Grid.Column="2" Orientation="Horizontal" HorizontalAlignment="Right" Width="172" >
                             <ToggleButton Width="32" Height="32" IsChecked="{Binding BassPlayer.IsMuted, Source={StaticResource MainLocator}, Mode=TwoWay}" Margin="10 0 10 0">
                                 <md:PackIcon Kind="VolumeHigh" Height="28" Width="28" ToolTip="{Binding AppLang.Mute, Source={StaticResource MainLocator}}"/>
                                 <md:ToggleButtonAssist.OnContent>
@@ -198,46 +124,35 @@
                         <ColumnDefinition MinWidth="187" MaxWidth="225"/>
                         <ColumnDefinition Width="4"/>
                     </Grid.ColumnDefinitions>
-                    <DockPanel Grid.Column="0">
-                        <TreeView Style="{DynamicResource CommonListBoxStyle2}" DockPanel.Dock="Top" HorizontalAlignment="Center" VerticalAlignment="Center" ItemContainerStyle="{DynamicResource SideBarContainerStyle}"
-                                  ItemsSource="{Binding SideBarItems}" ScrollViewer.HorizontalScrollBarVisibility="Disabled" Background="{Binding Theme.MainBackground, Source={StaticResource MainLocator}}">
-                            <TreeView.Resources>
-                                <HierarchicalDataTemplate DataType="{x:Type domain:DrawerCategory}" ItemsSource="{Binding TreeContent}">
-                                    <Button Style="{DynamicResource SimpleButtonStyle}" Command="{Binding Action}">
-                                        <Grid Background="Transparent">
-                                            <Grid.ColumnDefinitions>
-                                                <ColumnDefinition Width="auto"/>
-                                                <ColumnDefinition Width="*"/>
-                                            </Grid.ColumnDefinitions>
-                                            <md:PackIcon Grid.Column="0" Kind="{Binding Icon}" Margin="8 0 4 0" Width="24" Height="24" Foreground="{Binding Theme.ForegroundMenu, Source={StaticResource MainLocator}}"/>
-                                            <TextBlock Grid.Column="1" Text="{Binding Name}" FontSize="18" Foreground="{Binding Theme.ForegroundMenu, Source={StaticResource MainLocator}}"/>
-                                        </Grid>
-                                    </Button>
-                                </HierarchicalDataTemplate>
-                                <DataTemplate DataType="{x:Type domain:DrawerItem}">
-                                    <Button Style="{DynamicResource SimpleButtonStyle}" Command="{Binding Action}" Margin="2 2">
-                                        <TextBlock MaxWidth="170" Text="{Binding Name}" FontSize="14" Foreground="{Binding Theme.ForegroundMenu, Source={StaticResource MainLocator}}" TextTrimming="CharacterEllipsis"/>
-                                    </Button>
-                                </DataTemplate>
-                            </TreeView.Resources>
-                        </TreeView>
-                        <Grid DockPanel.Dock="Bottom" HorizontalAlignment="Center" VerticalAlignment="Bottom" Margin="0 0 0 8">
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="Auto"/>
-                                <ColumnDefinition Width="Auto"/>
-                            </Grid.ColumnDefinitions>
-                            <!--
-                            <TextBlock Grid.Column="0" VerticalAlignment="Center" Margin="8 0 8 0" FontSize="13" FontWeight="DemiBold" Text="{Binding AppLang.DarkModeSwitch, Source={StaticResource MainLocator}}"/>
-                            <ToggleButton Grid.Column="1" IsChecked="{Binding ThemeSwitcher}">
-                                <md:PackIcon Kind="ThemeLightDark" Foreground="Black"/>
-                                <md:ToggleButtonAssist.OnContent>
-                                    <md:PackIcon Kind="ThemeLightDark" Foreground="White"/>
-                                </md:ToggleButtonAssist.OnContent>
-                            </ToggleButton>
-                            -->
-                        </Grid>
-                    </DockPanel>
-                    <GridSplitter Grid.Column="1" Width="4" ResizeDirection="Columns" HorizontalAlignment="Stretch" Background="{StaticResource VKColor}"/>
+                    <TreeView Style="{DynamicResource CommonListBoxStyle2}" 
+                              Grid.Column="0"
+                              HorizontalAlignment="Center" VerticalAlignment="Top"
+                              Margin="0 5 0 0"
+                              ItemContainerStyle="{DynamicResource SideBarContainerStyle}"
+                              ItemsSource="{Binding SideBarItems}" 
+                              ScrollViewer.HorizontalScrollBarVisibility="Disabled" 
+                              Background="{Binding Theme.MainBackground, Source={StaticResource MainLocator}}">
+                        <TreeView.Resources>
+                            <HierarchicalDataTemplate DataType="{x:Type domain:DrawerCategory}" ItemsSource="{Binding TreeContent}">
+                                <Button Style="{DynamicResource SimpleButtonStyle}" Command="{Binding Action}">
+                                    <Grid Background="Transparent">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="auto"/>
+                                            <ColumnDefinition Width="*"/>
+                                        </Grid.ColumnDefinitions>
+                                        <md:PackIcon Grid.Column="0" Kind="{Binding Icon}" Margin="8 0 4 0" Width="24" Height="24" Foreground="{Binding Theme.ForegroundMenu, Source={StaticResource MainLocator}}"/>
+                                        <TextBlock Grid.Column="1" Text="{Binding Name}" FontSize="18" Foreground="{Binding Theme.ForegroundMenu, Source={StaticResource MainLocator}}"/>
+                                    </Grid>
+                                </Button>
+                            </HierarchicalDataTemplate>
+                            <DataTemplate DataType="{x:Type domain:DrawerItem}">
+                                <Button Style="{DynamicResource SimpleButtonStyle}" Command="{Binding Action}" Margin="2 2">
+                                    <TextBlock MaxWidth="170" Text="{Binding Name}" FontSize="14" Foreground="{Binding Theme.ForegroundMenu, Source={StaticResource MainLocator}}" TextTrimming="CharacterEllipsis"/>
+                                </Button>
+                            </DataTemplate>
+                        </TreeView.Resources>
+                    </TreeView>
+                    <GridSplitter Grid.Column="1" ResizeDirection="Columns" HorizontalAlignment="Stretch" Background="{StaticResource VKColor}"/>
                 </Grid>
                 <Grid Grid.Column="1">
                     <Grid.RowDefinitions>
@@ -245,34 +160,43 @@
                         <RowDefinition Height="*"/>
                     </Grid.RowDefinitions>
                     <md:ColorZone Grid.Row="0" Background="{Binding Theme.AboveMain, Source={StaticResource MainLocator}}" Mode="Standard" Padding="16" Visibility="{Binding SidebarVisible, Converter={StaticResource NullToVisibilityConventer}}">
-                        <DockPanel>
+                        <Grid>
                             <StackPanel Orientation="Horizontal" md:RippleAssist.IsCentered="True">
-                                <Button Style="{DynamicResource SimpleButtonV2}" ToolTip="Backward" Command="{Binding GoBackward}">
+                                <Button Style="{DynamicResource SimpleButtonV2}"
+                                        ToolTip="Backward" 
+                                        Command="{Binding GoBackward}">
                                     <md:PackIcon Kind="LessThan" Height="25"/>
                                 </Button>
-                                <Button Style="{DynamicResource SimpleButtonV2}" Margin="5 0 0 0" ToolTip="Forward" Command="{Binding GoForward}">
+                                <Button Style="{DynamicResource SimpleButtonV2}"
+                                        Margin="5 0 0 0" 
+                                        ToolTip="Forward" 
+                                        Command="{Binding GoForward}">
                                     <md:PackIcon Kind="GreaterThan" Height="25"/>
                                 </Button>
-                                <md:ColorZone Mode="Standard" Padding="4 0 0 0" Background="{Binding Theme.TextBoxBackground, Source={StaticResource MainLocator}}" CornerRadius="15" Panel.ZIndex="1" Margin="16 0 0 0" md:ShadowAssist.ShadowDepth="Depth1" Height="27" >
+                                <md:ColorZone Mode="Standard" Padding="4 0 0 0" Background="{Binding Theme.TextBoxBackground, Source={StaticResource MainLocator}}" CornerRadius="15" Panel.ZIndex="1" Margin="16 0 0 0" md:ShadowAssist.ShadowDepth="Depth1" Height="32" >
                                     <Grid>
                                         <Grid.ColumnDefinitions>
                                             <ColumnDefinition Width="Auto" />
                                             <ColumnDefinition Width="*" />
                                             <ColumnDefinition Width="Auto" />
                                         </Grid.ColumnDefinitions>
-                                        <Button x:Name="DoSearch" Style="{DynamicResource MaterialDesignToolButton}" Command="{Binding DoSearch}" CommandParameter="{Binding ElementName=tbSearchQuery, Path=Text}" Height="Auto" >
-                                            <md:PackIcon Kind="Magnify" Opacity=".56" />
+                                        <Button x:Name="DoSearch" Style="{DynamicResource SimpleButtonV2}" Command="{Binding DoSearch}" CommandParameter="{Binding ElementName=tbSearchQuery, Path=Text}">
+                                            <md:PackIcon Kind="Magnify" Opacity=".86" />
                                         </Button>
                                         <TextBox x:Name="tbSearchQuery" Text="{Binding SearchQuery, Mode=TwoWay}" md:HintAssist.Foreground="{Binding Theme.HintForeground, Source={StaticResource MainLocator}}"  Foreground="{Binding Theme.TextBoxForeground, Source={StaticResource MainLocator}}"
                                                  TextChanged="tbSearchQuery_TextChanged" Grid.Column="1" Margin="8 0 0 0" md:HintAssist.Hint="Search query" BorderThickness="0" MinWidth="200" VerticalAlignment="Center"
                                                  md:TextFieldAssist.DecorationVisibility="Hidden" />
-                                        <Button x:Name="UploadAudio" Style="{DynamicResource MaterialDesignToolButton}" Command="{Binding Upload}" Grid.Column="2">
-                                            <md:PackIcon Kind="Upload" Foreground="{Binding Theme.HintForeground, Source={StaticResource MainLocator}}"/>
-                                        </Button>
                                     </Grid>
                                 </md:ColorZone>
                             </StackPanel>
-                        </DockPanel>
+                            <Button x:Name="UploadAudio"
+                                    Style="{DynamicResource SimpleButtonV2}"
+                                    Command="{Binding Upload}" 
+                                    ToolTip="{Binding AppLang.UploadAudio, Source={StaticResource MainLocator}}"
+                                    HorizontalAlignment="Right" Width="32" Height="28">
+                                <md:PackIcon Kind="Upload" Width="20" Height="28"/>
+                            </Button>
+                        </Grid>
                     </md:ColorZone>
                     <Frame x:Name="FrameMain" NavigationUIVisibility="Hidden" Grid.Row="1"/>
                 </Grid>

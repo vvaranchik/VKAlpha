@@ -22,7 +22,6 @@ namespace VKAlpha.ViewModels
 
         private void InitCommands()
         {
-
             PlayCommand = new RelayCommand(Play);
             GetRecommendationsCmd = new RelayCommand(GetRecommendations);
         }
@@ -53,18 +52,19 @@ namespace VKAlpha.ViewModels
 
         private void Init(ICollection<AudioModel> recommendations)
         {
-            foreach(var audio in recommendations)
+            MainViewModelLocator.WindowDialogs.OpenDialog(new Dialogs.Loading().LoadingDial.DialogContent);
+            foreach (var audio in recommendations)
             {
                 if (!string.IsNullOrEmpty(audio.Url))
                     collection.Add(audio);
             }
-            //collection = new ObservableCollection<AudioModel>(recommendations);
+            MainViewModelLocator.WindowDialogs.CloseDialog();
             MainViewModelLocator.PlaylistControl.NullCheckPlaylist(collection);
         }
 
         private async void Init(ulong uid, long albumId = 0)
         {
-            _ = MainViewModelLocator.WindowDialogs.OpenDialog(new Dialogs.Loading().LoadingDial.DialogContent);
+            MainViewModelLocator.WindowDialogs.OpenDialog(new Dialogs.Loading().LoadingDial.DialogContent);
             await Task.Run(async () =>
             {
                 var result = albumId == 0 ? await MainViewModelLocator.Vk.VkAudio.Get((long)uid, captchaSid: captchaSid, captchaKey: captchaKey) : await MainViewModelLocator.Vk.VkAudio.Get((long)uid, albumId, captchaSid: captchaSid, captchaKey: captchaKey);
@@ -72,13 +72,14 @@ namespace VKAlpha.ViewModels
                 return result;
             }).ContinueWith(async tsk =>
             {
+                MainViewModelLocator.WindowDialogs.CloseDialog();
                 var error = VKErrorProcessor.GetLastError();
                 if (error.code != VKErrorProcessor.VKErrors.NO_ERROR)
                 {
                     switch (error.code)
                     {
                         case VKErrorProcessor.VKErrors.Capthca:
-                            var e = (VKErrorProcessor.GetLastError().exception as VKCaptchaRequired);
+                            var e = VKErrorProcessor.GetLastError().exception as VKCaptchaRequired;
                             var captcha = new Dialogs.CaptchaDialog();
                             captcha.CaptchaImg.Source = await e.CaptchaImg.GetImageSource();
                             await MainViewModelLocator.WindowDialogs.OpenDialog(captcha.CaptchaDial.DialogContent);
@@ -109,16 +110,12 @@ namespace VKAlpha.ViewModels
                     if (!string.IsNullOrEmpty(a.Url))
                         collection.Add(AudioModel.VKModelToAudio(a));
                 });
-                MainViewModelLocator.PlaylistControl.NullCheckPlaylist(collection);
-                if (collection.Count > 100)
-                {
-                    if((long)uid == MainViewModelLocator.Settings.userid)
-                    {
-                        var items = MainViewModelLocator.MainViewModel.SideBarItems[0].TreeContent;
-                        if (items[items.Count - 1].Name == "Get Recommendations") return;
-                        items.Add(new Controls.DrawerItem("Get Recommendations", GetRecommendationsCmd));
-                    }
-                }
+                //if (uid == MainViewModelLocator.Vk.AccessToken.UserId && collection.Count > 100)
+                //{
+                //    var items = MainViewModelLocator.MainViewModel.SideBarItems[0].TreeContent;
+                //    if (items[items.Count - 1].Name == "Get Recommendations") return;
+                //    items.Add(new Controls.DrawerItem("Get Recommendations", GetRecommendationsCmd));
+                //}
             }, TaskScheduler.FromCurrentSynchronizationContext());
             MainViewModelLocator.WindowDialogs.CloseDialog();
             if (MainViewModelLocator.MainViewModel.IsSearchActive) MainViewModelLocator.MainViewModel.IsSearchActive = false;
@@ -126,7 +123,7 @@ namespace VKAlpha.ViewModels
 
         private async void Init(string query)
         {
-            _ = MainViewModelLocator.WindowDialogs.OpenDialog(new Dialogs.Loading().LoadingDial.DialogContent);
+            MainViewModelLocator.WindowDialogs.OpenDialog(new Dialogs.Loading().LoadingDial.DialogContent);
             await Task.Run(async () =>
             {
                 var result = await MainViewModelLocator.Vk.VkAudio.Search(query, captchaSid: captchaSid, captchaKey: captchaKey);
@@ -134,6 +131,7 @@ namespace VKAlpha.ViewModels
                 return result;
             }).ContinueWith(async(tsk) =>
             {
+                MainViewModelLocator.WindowDialogs.CloseDialog();
                 if (tsk.Result.IsEmpty())
                 {
                     var error = VKErrorProcessor.GetLastError();
@@ -142,7 +140,7 @@ namespace VKAlpha.ViewModels
                         switch (error.code)
                         {
                             case VKErrorProcessor.VKErrors.Capthca:
-                                var e = (VKErrorProcessor.GetLastError().exception as VKCaptchaRequired);
+                                var e = VKErrorProcessor.GetLastError().exception as VKCaptchaRequired;
                                 var captcha = new Dialogs.CaptchaDialog();
                                 captcha.CaptchaImg.Source = await e.CaptchaImg.GetImageSource();
                                 await MainViewModelLocator.WindowDialogs.OpenDialog(captcha.CaptchaDial.DialogContent);
@@ -174,13 +172,13 @@ namespace VKAlpha.ViewModels
             if (!MainViewModelLocator.MainViewModel.IsSearchActive) MainViewModelLocator.MainViewModel.IsSearchActive = true;
         }
 
-        private async Task<Collection<AudioModel>> GetRandomTracks(int n)
+        private async Task<Collection<AudioModel>> GetRandomTracks(uint n)
         {
             Collection<AudioModel> tracks = new Collection<AudioModel>();
             if (n > 0)
             {
                 var audios = collection[0].OwnerId == MainViewModelLocator.Settings.userid ? collection : AudioModel.VKArrayToAudioCollection(await MainViewModelLocator.Vk.VkAudio.Get());
-                for (var i = 0; i < n; i++)
+                for (var _ = 0; _ < n; _++)
                 {
                     tracks.Add(audios.GetRandomElement());
                 }
@@ -236,10 +234,11 @@ namespace VKAlpha.ViewModels
             MainViewModelLocator.WindowDialogs.OpenDialog(new Dialogs.Loading().LoadingDial.DialogContent);
             await Task.Run(async () =>
             {
-                return await getRecommendations((Collection<AudioModel>)o);
+                return await getRecommendations();
             }).ContinueWith(new System.Action<Task<MonoSpotifyLib.Spotify.RETURN<Collection<AudioModel>>>>(async (tsk) =>
             {
                 var @return = tsk.Result;
+                MainViewModelLocator.WindowDialogs.CloseDialog();
                 // need to move error processing to another method, probably to MainViewModelLocator.ProcessError(SafeReturn<> ret_val)
                 if (@return.GetError() != MonoSpotifyLib.Spotify.Exceptions.Errors.NoError)
                 {
@@ -247,7 +246,7 @@ namespace VKAlpha.ViewModels
                     switch (error)
                     {
                         case MonoSpotifyLib.Spotify.Exceptions.Errors.InvalidMethod:
-                            var e = (VKErrorProcessor.GetLastError().exception as VKCaptchaRequired);
+                            var e = VKErrorProcessor.GetLastError().exception as VKCaptchaRequired;
                             var captcha = new Dialogs.CaptchaDialog();
                             captcha.CaptchaImg.Source = await e.CaptchaImg.GetImageSource();
                             captchaSid = e.CaptchaSid;
@@ -264,14 +263,15 @@ namespace VKAlpha.ViewModels
                             return;
                     }
                 }
-                if (@return.GetResult().Count < 16)
+                var recommendations = @return.GetResult();
+                if (recommendations.Count < 16)
                 {
                     //MainViewModelLocator.MainViewModel.MessageQueue.Enqueue("No recommendations found, try again later.");
-                    GetRecommendations(tsk.Result); // lets retry
+                    GetRecommendations(recommendations); // lets retry
                     return;
                 }
-                @return.GetResult().Shuffle();
-                Navigation.Get.Navigate("AudiosListView", new AudiosListViewModel(@return.GetResult()));
+                recommendations.Shuffle();
+                Navigation.Get.Navigate("AudiosListView", new AudiosListViewModel(recommendations));
             }), TaskScheduler.FromCurrentSynchronizationContext());
             MainViewModelLocator.WindowDialogs.CloseDialog();
         }

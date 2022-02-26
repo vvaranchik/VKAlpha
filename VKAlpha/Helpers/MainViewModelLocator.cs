@@ -2,13 +2,11 @@
 using MonoVKLib.VK;
 using MonoSpotifyLib.Spotify;
 using VKAlpha.BASS;
-using MonoVKLib.VK.Exceptions;
 
 namespace VKAlpha.Helpers
 {
     public class MainViewModelLocator
     {
-        private static readonly DiscordPresence discord = new DiscordPresence();
         private static readonly Properties.Settings _settings = new Properties.Settings();
         private static readonly VK _vk = new VK("2274003", "hHbZxrka2uZ6jB1inYsH");
         private static readonly Spotify _spotify = new Spotify(_settings.sptoken, _settings.spexpire);
@@ -30,8 +28,6 @@ namespace VKAlpha.Helpers
         public static PlaylistControl PlaylistControl => _pc;
 
         public static BassAudioPlayer BassPlayer => _bass;
-
-        public static DiscordPresence Discord => discord;
 
         public static Resources.Lang.LangModel AppLang { get; set; } = new Resources.Lang.LangModel();
 

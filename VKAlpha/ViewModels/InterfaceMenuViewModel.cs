@@ -18,11 +18,16 @@ namespace VKAlpha.ViewModels
         IList<string> themes_filenames;
 
         string sCurrent_theme, sCurrent_lang;
+        bool loadUserAvatars = MainViewModelLocator.Settings.load_user_avatars, loadTrackCovers = MainViewModelLocator.Settings.load_track_covers, cacheTrackCovers = MainViewModelLocator.Settings.cache_track_covers;
 
         public event PropertyChangedEventHandler PropertyChanged;
 
         public string CurrentTheme { get => sCurrent_theme; set { sCurrent_theme = value; if (!ignore_on_startup) SetTheme.Execute(themes_filenames[themes.IndexOf(sCurrent_theme)]); } }
         public string CurrentLang { get => sCurrent_lang; set { sCurrent_lang = value; if (!ignore_on_startup) SetLang.Execute(CurrentLang); } }
+
+        public bool LoadUserAvatars { get => loadUserAvatars; set { loadUserAvatars = MainViewModelLocator.Settings.load_user_avatars = value; RaisePropertyChanged()?.Invoke(new PropertyChangedEventArgs(null)); } }
+        public bool LoadTrackCovers { get => loadTrackCovers; set { loadTrackCovers = MainViewModelLocator.Settings.load_track_covers = value; RaisePropertyChanged()?.Invoke(new PropertyChangedEventArgs(null)); } }
+        public bool CacheTrackCovers { get => cacheTrackCovers; set { cacheTrackCovers = MainViewModelLocator.Settings.cache_track_covers = value; RaisePropertyChanged()?.Invoke(new PropertyChangedEventArgs(null)); } }
 
         public IList<string> Languages { get => languages; set => this.MutateVerbose(ref languages, value, RaisePropertyChanged()); }
         public IList<string> Themes { get => themes; set => this.MutateVerbose(ref themes, value, RaisePropertyChanged()); }

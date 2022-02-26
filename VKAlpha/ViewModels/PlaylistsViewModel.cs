@@ -36,13 +36,14 @@ namespace VKAlpha.ViewModels
                     Navigation.Get.GoBack();
                     return;
                 }
+                var logo = (App.Current.FindResource("ALPHA") as System.Windows.Controls.Image).Source.ToString();
                 tsk.Result.ForEach((a) =>
                 {
                     if (a.Count > 0)
                     {
                         if(a.Thumbs == null || a.Thumbs.Count == 0)
                         {
-                            a.Photo = (App.Current.FindResource("ALPHA") as System.Windows.Controls.Image).Source.ToString();
+                            a.Photo = logo;
                         }
                         else if (a.Thumbs.Count <= 4 && a.Thumbs.Count > 0)
                         {
@@ -55,7 +56,7 @@ namespace VKAlpha.ViewModels
                 
                 if (uid == MainViewModelLocator.Vk.AccessToken.UserId)
                 {
-                    collection.Add(new MonoVKLib.VK.Models.VKPlaylistModel { Title = "Create new playlist", Photo = (App.Current.FindResource("ALPHA") as System.Windows.Controls.Image).Source.ToString(), Id = -2 });
+                    collection.Add(new MonoVKLib.VK.Models.VKPlaylistModel { Title = "Create new playlist", Photo = logo, Id = -2 });
                 }
             }, TaskScheduler.FromCurrentSynchronizationContext());
             MainViewModelLocator.WindowDialogs.CloseDialog();
@@ -65,6 +66,13 @@ namespace VKAlpha.ViewModels
         {
             if((long)playlistId == -2)
             {
+                // TODO: 
+                // Open dialog with fields:
+                // Title
+                // Description (optional)
+                // Selectable image for playlist cover (optional)
+                // Next dialog with list of main audios that can be selected for adding in this playlist
+                // [Submit] [Cancel]
                 MainViewModelLocator.MainViewModel.MessageQueue.Enqueue("This feature not available now...");
                 return;
             }

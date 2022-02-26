@@ -19,7 +19,12 @@
                 <ScrollViewer Grid.Row="0" HorizontalScrollBarVisibility="Disabled">
                     <TextBox IsReadOnly="True" IsReadOnlyCaretVisible="False" Margin="10,0" Name="tbLyrics" HorizontalScrollBarVisibility="Disabled" TextWrapping="WrapWithOverflow"/>
                 </ScrollViewer>
-                <Button Grid.Row="2" Background="Transparent" Foreground="Black" HorizontalAlignment="Center" Command="{Binding CloseDialog}" BorderBrush="{StaticResource VKColor}" md:ButtonAssist.CornerRadius="15">Close</Button>
+                <Button Style="{StaticResource MaterialDesignOutlinedButton}"
+                    Grid.Row="2" Background="Transparent" Foreground="Black" 
+                    HorizontalAlignment="Center" Command="{Binding CloseDialog}" 
+                    BorderBrush="{StaticResource VKColor}">
+                    Close
+                </Button>
             </Grid>
         </md:DialogHost.DialogContent>
     </md:DialogHost>

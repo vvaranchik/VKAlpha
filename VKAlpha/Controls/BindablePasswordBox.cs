@@ -9,6 +9,7 @@ namespace VKAlpha.Controls
         /// The password dependency property.
         /// </summary>
         public static readonly DependencyProperty PasswordProperty;
+        public static readonly DependencyProperty ForegroundProperty;
 
         private bool _isPreventCallback;
         private readonly RoutedEventHandler _savedCallback;
@@ -24,6 +25,12 @@ namespace VKAlpha.Controls
                 typeof(BindablePasswordBox),
                 new FrameworkPropertyMetadata("", FrameworkPropertyMetadataOptions.BindsTwoWayByDefault, new PropertyChangedCallback(OnPasswordPropertyChanged))
             );
+            ForegroundProperty = DependencyProperty.Register(
+                "Foreground",
+                typeof(System.Windows.Media.Brush),
+                typeof(BindablePasswordBox),
+                new PropertyMetadata(default(System.Windows.Media.Brush), new PropertyChangedCallback(OnForegroundPropertyChanged))
+            );
         }
 
         /// <summary>
@@ -38,6 +45,12 @@ namespace VKAlpha.Controls
             Child = passwordBox;
         }
 
+        public System.Windows.Media.Brush Foreground
+        {
+            get => GetValue(ForegroundProperty) as System.Windows.Media.Brush;
+            set => SetValue(ForegroundProperty, value);
+        }
+
         /// <summary>
         /// The password dependency property.
         /// </summary>
@@ -45,6 +58,19 @@ namespace VKAlpha.Controls
         {
             get { return GetValue(PasswordProperty) as string; }
             set { SetValue(PasswordProperty, value); }
+        }
+
+        private static void OnForegroundPropertyChanged(DependencyObject d, DependencyPropertyChangedEventArgs args)
+        {
+            var bindablePasswordBox = (BindablePasswordBox)d;
+            var passwordBox = (PasswordBox)bindablePasswordBox.Child;
+
+            if (bindablePasswordBox._isPreventCallback)
+            {
+                return;
+            }
+
+            passwordBox.Foreground = (System.Windows.Media.Brush)((args.NewValue != null) ? args.NewValue : default);
         }
 
         /// <summary>

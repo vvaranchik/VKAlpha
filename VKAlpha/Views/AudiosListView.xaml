@@ -12,7 +12,9 @@
     </UserControl.Resources>
     <Grid>
         <ListBox x:Name="AudiosList" ItemsSource="{Binding collection}"
-            VirtualizingStackPanel.ScrollUnit="Pixel" ScrollViewer.HorizontalScrollBarVisibility="Disabled"
-                 ItemContainerStyle="{StaticResource AudioListBoxItemStyle}" ItemTemplate="{StaticResource LocalAudioItemTemplate}"/>
+                 VirtualizingStackPanel.ScrollUnit="Pixel" 
+                 ScrollViewer.HorizontalScrollBarVisibility="Disabled"
+                 ItemContainerStyle="{StaticResource AudioListBoxItemStyle}" 
+                 ItemTemplate="{StaticResource LocalAudioItemTemplate}"/>
     </Grid>
 </UserControl>

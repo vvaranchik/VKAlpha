@@ -130,5 +130,17 @@ namespace VKAlpha.Properties {
                 this["load_user_avatars"] = value;
             }
         }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("True")]
+        public bool cache_track_covers {
+            get {
+                return ((bool)(this["cache_track_covers"]));
+            }
+            set {
+                this["cache_track_covers"] = value;
+            }
+        }
     }
 }

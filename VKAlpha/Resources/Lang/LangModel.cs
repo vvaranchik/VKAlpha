@@ -77,6 +77,8 @@ namespace VKAlpha.Resources.Lang
         [JsonProperty(Required = Required.Always)]
         public string My { get; set; }
         [JsonProperty(Required = Required.Always)]
+        public string UploadAudio { get; set; }
+        [JsonProperty(Required = Required.Always)]
         public string strFormatFriends { get; set; }
     }
 }

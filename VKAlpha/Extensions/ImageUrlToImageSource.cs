@@ -1,8 +1,6 @@
 ﻿using System;
 using System.IO;
 using System.Net;
-using System.Threading;
-using System.Windows.Media;
 using System.Windows.Media.Imaging;
 
 namespace VKAlpha.Extensions
@@ -29,7 +27,7 @@ namespace VKAlpha.Extensions
             return bytes;
         }
 
-        public static async System.Threading.Tasks.Task<ImageSource> GetImageSource(this string Url)
+        public static async System.Threading.Tasks.Task<BitmapImage> GetImageSource(this string Url)
         {
             var imageData = await new WebClient().DownloadDataTaskAsync(new Uri(Url, UriKind.RelativeOrAbsolute));
 

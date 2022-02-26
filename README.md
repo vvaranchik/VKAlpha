@@ -9,7 +9,6 @@
 
 ### Uses:
 * [ControlzEx by Jan Karger, Bastian Schmidt, James Willock](https://github.com/ControlzEx/ControlzEx)
-* [DiscordRichPresence by Lachee](https://github.com/Lachee/discord-rpc-csharp)
 * [MahApps.Metro by Jan Karger, Dennis Daume, Brendan Forster, Paul Jenkins, Jake Ginnivan, Alex Mitchell](https://github.com/MahApps/MahApps.Metro)
 * [MaterialDesignColors & MaterialDesignThemes by James Willock](https://github.com/MaterialDesignInXAML/MaterialDesignInXamlToolkit)
 * [Newtonsoft.Json by James Newton-King](https://www.newtonsoft.com/json)

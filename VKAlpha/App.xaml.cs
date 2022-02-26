@@ -51,6 +51,7 @@ namespace VKAlpha
             return true;
         }
 
+        [System.Obsolete("Soon this will be removed")]
         public static void CreateDefaultSetup(bool lang, bool theme)
         {
             if (lang)
@@ -96,6 +97,7 @@ namespace VKAlpha
   ""AppearanceCat"": ""Appearance"",
   ""Playlists"": ""Playlists"",
   ""My"": ""My"",
+  ""UploadAudio"": ""Upload audio to VK.com"",
   ""strFormatFriends"": ""[user] [friends]""
 }");
                 if (File.Exists("./Resources/Lang/ru.json"))
@@ -138,6 +140,7 @@ namespace VKAlpha
   ""AppearanceCat"": ""Внешний вид"",
   ""Playlists"": ""Плейлисты"",
   ""My"": ""Мои"",
+  ""UploadAudio"": ""Загрузить аудио в VK.com"",
   ""strFormatFriends"": ""[friends] [user]""
 }
 ");
@@ -198,6 +201,13 @@ namespace VKAlpha
             }
         }
 
+        public static void RaiseException<T>(string err_msg, T expception, string caption = "ERROR") where T : System.Exception
+        {
+            MessageBox.Show(err_msg, caption, MessageBoxButton.OK, MessageBoxImage.Error);
+            var e = new System.Exception(err_msg, expception);
+            throw e;
+        }
+
         protected override void OnStartup(StartupEventArgs e)
         {
             if (!LoadLang(MainViewModelLocator.Settings.lang))
@@ -205,23 +215,21 @@ namespace VKAlpha
                 {
                     CreateDefaultSetup(true, false);
                     LoadLang("en");
-                }//throw new FileNotFoundException("Language file not found or corrupted!");
+                }
 
             if (!LoadTheme(MainViewModelLocator.Settings.theme))
                 if (!LoadTheme("default"))
                 {
                     CreateDefaultSetup(false, true);
                     LoadTheme("default");
-                }//throw new FileNotFoundException("Theme file not found or corrupted!");
-
-            
+                }
 
             base.OnStartup(e);
         }
 
         protected override void OnExit(ExitEventArgs e)
         {
-            MainViewModelLocator.BassPlayer.Stop(true);
+            MainViewModelLocator.BassPlayer.Unload();
             MainViewModelLocator.Settings.spexpire = MainViewModelLocator.SpotifyHelper.AccessToken.ExpireTime;
             MainViewModelLocator.Settings.sptoken = MainViewModelLocator.SpotifyHelper.AccessToken.Token;
             MainViewModelLocator.Settings.Save();

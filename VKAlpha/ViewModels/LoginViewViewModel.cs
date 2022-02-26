@@ -1,6 +1,7 @@
 ﻿using System;
 using System.ComponentModel;
 using System.Windows.Input;
+using System.Threading.Tasks;
 using VKAlpha.Extensions;
 using VKAlpha.Helpers;
 using MonoVKLib.VK.Exceptions;
@@ -30,7 +31,14 @@ namespace VKAlpha.ViewModels
         private async void TryLogin(object _ = null)
         {
             MainViewModelLocator.WindowDialogs.OpenDialog(new Dialogs.Loading().LoadingDial.DialogContent);
-            var result = await MainViewModelLocator.Vk.VkAuth.Login(Login, Password, captchaSid, captchaKey);
+            var result = await Task.Run(async () =>
+            {
+                var task = await MainViewModelLocator.Vk.VkAuth.Login(Login, Password, captchaSid, captchaKey);
+                captchaSid = null;
+                captchaKey = null;
+                return task;
+            });
+            MainViewModelLocator.WindowDialogs.CloseDialog();
             if (!result)
             {
                 switch (VKErrorProcessor.GetLastError().code)
@@ -50,6 +58,7 @@ namespace VKAlpha.ViewModels
                         Password = "";
                         break;
                 }
+                MainViewModelLocator.WindowDialogs.CloseDialog();
                 return;
             }
             MainViewModelLocator.Settings.token = MainViewModelLocator.Vk.AccessToken.Token;
@@ -60,7 +69,6 @@ namespace VKAlpha.ViewModels
             Navigation.Get.Navigate("AudiosListView", new AudiosListViewModel(MainViewModelLocator.Vk.AccessToken.UserId));
             MainViewModelLocator.MainViewModel.LoadPlaylists();
             MainViewModelLocator.MainViewModel.SidebarVisible = true;
-            //MainViewModelLocator.WindowDialogs.CloseDialog();
         }
 
         public event PropertyChangedEventHandler PropertyChanged;

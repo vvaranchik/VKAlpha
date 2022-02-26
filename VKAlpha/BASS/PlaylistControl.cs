@@ -8,7 +8,6 @@ namespace VKAlpha.BASS
     public class PlaylistControl
     {
         public PlaylistControl() { }
-
         private bool shuffled = false;
 
         public bool RequstShuffle { get; set; } = false;
@@ -29,7 +28,10 @@ namespace VKAlpha.BASS
 
         public void CheckPlaylist(ICollection<AudioModel> collection)
         {
-            if (PlayingPlaylist.FirstOrDefault() == default(AudioModel) || collection.First().OwnerId != PlayingPlaylist[0].OwnerId || (collection.First().OwnerId == PlayingPlaylist[0].OwnerId && collection.First().Id != PlayingPlaylist[0].Id))
+            if (PlayingPlaylist.FirstOrDefault() == default(AudioModel) ||
+                collection.First().OwnerId != PlayingPlaylist[0].OwnerId ||
+                (collection.First().OwnerId == PlayingPlaylist[0].OwnerId &&
+                collection.First().Id != PlayingPlaylist[0].Id))
             {
                 LoadPlayingPlaylist(collection);
             }
