@@ -12,7 +12,7 @@ namespace VKAlpha.Helpers
         private static readonly Spotify _spotify = new Spotify(_settings.sptoken, _settings.spexpire);
         private static readonly BassAudioPlayer _bass = new BassAudioPlayer();
         private static readonly PlaylistControl _pc = new PlaylistControl();
-        private static readonly Dialogs.WindowDialogs _d = new Dialogs.WindowDialogs();
+        private static readonly Lazy<Dialogs.WindowDialogs> _d = new Lazy<Dialogs.WindowDialogs>(() => new Dialogs.WindowDialogs());
         private static readonly Lazy<MainViewModel> _mvm = new Lazy<MainViewModel>(() => new MainViewModel());
 
         internal static Properties.Settings Settings => _settings;
@@ -23,7 +23,7 @@ namespace VKAlpha.Helpers
 
         public static Spotify SpotifyHelper => _spotify;
 
-        public static Dialogs.WindowDialogs WindowDialogs => _d;
+        public static Dialogs.WindowDialogs WindowDialogs => _d.Value;
 
         public static PlaylistControl PlaylistControl => _pc;
 

@@ -186,7 +186,7 @@ namespace VKAlpha.ViewModels
             return tracks;
         }
 
-        private async Task<MonoSpotifyLib.Spotify.RETURN<Collection<AudioModel>>> getRecommendations(Collection<AudioModel> prevCollection = null)
+        private async Task<Collection<AudioModel>> getRecommendations(Collection<AudioModel> prevCollection = null)
         {
             var tmp = prevCollection ?? new Collection<AudioModel>();
             var audios = await GetRandomTracks(10); // seems accurate enough
@@ -203,9 +203,9 @@ namespace VKAlpha.ViewModels
                         if (VKErrorProcessor.GetLastError().code != VKErrorProcessor.VKErrors.NO_ERROR)
                         {
                             if (VKErrorProcessor.GetLastError().code == VKErrorProcessor.VKErrors.Capthca)
-                                return new MonoSpotifyLib.Spotify.RETURN<Collection<AudioModel>>(MonoSpotifyLib.Spotify.Exceptions.Errors.InvalidMethod, tmp);
+                                return tmp;
                             else if (VKErrorProcessor.GetLastError().code == VKErrorProcessor.VKErrors.InvalidClient)
-                                return new MonoSpotifyLib.Spotify.RETURN<Collection<AudioModel>>(MonoSpotifyLib.Spotify.Exceptions.Errors.InvalidClient, null);
+                                return new Collection<AudioModel>();
                         }
                         continue;
                     }
@@ -218,7 +218,7 @@ namespace VKAlpha.ViewModels
                 }
                 await Task.Delay(1550);
             }
-            return new MonoSpotifyLib.Spotify.RETURN<Collection<AudioModel>>(MonoSpotifyLib.Spotify.Exceptions.Errors.NoError, tmp);
+            return tmp;
         }
 
         /// <summary>
@@ -235,15 +235,15 @@ namespace VKAlpha.ViewModels
             await Task.Run(async () =>
             {
                 return await getRecommendations();
-            }).ContinueWith(new System.Action<Task<MonoSpotifyLib.Spotify.RETURN<Collection<AudioModel>>>>(async (tsk) =>
+            }).ContinueWith(new System.Action<Task<Collection<AudioModel>>>(async (tsk) =>
             {
                 var @return = tsk.Result;
                 MainViewModelLocator.WindowDialogs.CloseDialog();
                 // need to move error processing to another method, probably to MainViewModelLocator.ProcessError(SafeReturn<> ret_val)
-                if (@return.GetError() != MonoSpotifyLib.Spotify.Exceptions.Errors.NoError)
+                if (@return == null || @return.Count == 0)
                 {
-                    var error = @return.GetError();
-                    switch (error)
+                    var error = MonoSpotifyLib.Spotify.Exceptions.SpotifyErrorProcessor.GetLastError();
+                    switch (error.code)
                     {
                         case MonoSpotifyLib.Spotify.Exceptions.Errors.InvalidMethod:
                             var e = VKErrorProcessor.GetLastError().exception as VKCaptchaRequired;
@@ -252,7 +252,7 @@ namespace VKAlpha.ViewModels
                             captchaSid = e.CaptchaSid;
                             await MainViewModelLocator.WindowDialogs.OpenDialog(captcha.CaptchaDial.DialogContent);
                             captchaKey = captcha.CaptchaKey.Text;
-                            GetRecommendations(@return.GetResult());
+                            GetRecommendations(@return);
                             return;
                         case MonoSpotifyLib.Spotify.Exceptions.Errors.InvalidClient:
                             MainViewModelLocator.MainViewModel.Logout();
@@ -263,7 +263,7 @@ namespace VKAlpha.ViewModels
                             return;
                     }
                 }
-                var recommendations = @return.GetResult();
+                var recommendations = @return;
                 if (recommendations.Count < 16)
                 {
                     //MainViewModelLocator.MainViewModel.MessageQueue.Enqueue("No recommendations found, try again later.");

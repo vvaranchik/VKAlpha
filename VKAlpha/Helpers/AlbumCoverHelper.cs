@@ -63,20 +63,21 @@ namespace VKAlpha.Helpers
             }
 
             var imageUri = await MainViewModelLocator.SpotifyHelper.Covers.GetAlbumCover(
-                model.Artist
-                    .Replace(new[] {'[',']'})
+                 model.Artist
+                    .Replace(new[] { "[", "]" })
                     .Split(separators, System.StringSplitOptions.RemoveEmptyEntries)[0], 
                 model.Title);
-            if (!string.IsNullOrEmpty(imageUri.GetResult()))
+
+            if (!string.IsNullOrEmpty(imageUri))
             {
                 if (token.IsCancellationRequested)
                 {
                     CancelCover();
                     return;
                 }
-                model.Cover = await CacheService.SetCover(imageUri.GetResult(), path, model);
-                isRequesting = false;
+                model.Cover = await CacheService.SetCover(imageUri, path, model);
             }
+            isRequesting = false;
         }
     }
 }
