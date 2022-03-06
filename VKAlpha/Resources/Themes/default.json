@@ -1,4 +1,3 @@
-
 {
 	"name": "Default [VK Alpha] Theme",
 	"shortname": "default",
@@ -15,8 +14,8 @@
 	"TextBoxForeground": "#FF000000",
 	"BelowMain": "#FF263981",
 	"AboveMain": "#FF263981",
-	"btnHovered": "#FF142155",
-	"checkBoxUncheked": "#FFffffff",
+	"btnHovered": "#FF4169FF",
+	"checkBoxUnchecked": "#FFffffff",
 	"checkBoxChecked": "#FF142155",
 	"listboxItemHovered": "#FFE2E2E2"
 }

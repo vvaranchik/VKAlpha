@@ -28,7 +28,7 @@ namespace VKAlpha.BASS
 
         public void CheckPlaylist(ICollection<AudioModel> collection)
         {
-            if (PlayingPlaylist.FirstOrDefault() == default(AudioModel) ||
+            if (!AudioModel.IsAudioValid(PlayingPlaylist.FirstOrDefault()) ||
                 collection.First().OwnerId != PlayingPlaylist[0].OwnerId ||
                 (collection.First().OwnerId == PlayingPlaylist[0].OwnerId &&
                 collection.First().Id != PlayingPlaylist[0].Id))
@@ -39,7 +39,7 @@ namespace VKAlpha.BASS
 
         public void NullCheckPlaylist(ICollection<AudioModel> collection)
         {
-            if (PlayingPlaylist.FirstOrDefault() == default(AudioModel))
+            if (!AudioModel.IsAudioValid(PlayingPlaylist.FirstOrDefault()))
             {
                 LoadPlayingPlaylist(collection);
             }
@@ -47,8 +47,8 @@ namespace VKAlpha.BASS
 
         public void ShuffleCheck()
         {
-            string data = Helpers.MainViewModelLocator.BassPlayer.CurrentTrack.FullData;
-            if (Helpers.MainViewModelLocator.BassPlayer.IsShuffled)
+            //string data = Helpers.MainViewModelLocator.MainViewModel.CurrentTrack.FullData;
+            if (Helpers.MainViewModelLocator.MainViewModel.IsShuffled)
             {
                 if (shuffled && !RequstShuffle)
                     return;
@@ -61,7 +61,7 @@ namespace VKAlpha.BASS
                 shuffled = false;
             }
             RequstShuffle = false;
-            Helpers.MainViewModelLocator.BassPlayer.SelectTrack(data);
+            //Helpers.MainViewModelLocator.BassPlayer.SelectTrack(data);
         }
     }
 }

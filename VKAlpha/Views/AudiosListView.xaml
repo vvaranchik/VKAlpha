@@ -3,18 +3,31 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:parent="clr-namespace:VKAlpha"
              xmlns:local="clr-namespace:VKAlpha.Views"
              xmlns:md="http://materialdesigninxaml.net/winfx/xaml/themes"
-             mc:Ignorable="d" 
+             mc:Ignorable="d" xmlns:i="http://schemas.microsoft.com/xaml/behaviors"
              d:DesignHeight="450" d:DesignWidth="800" Name="AudiosListV">
     <UserControl.Resources>
         <Style TargetType="ListBox" BasedOn="{StaticResource CommonListBoxStyle}"/>
     </UserControl.Resources>
     <Grid>
-        <ListBox x:Name="AudiosList" ItemsSource="{Binding collection}"
+        <ListBox x:Name="AudiosList" ItemsSource="{Binding Collection}"
+                 PreviewMouseRightButtonDown="IgnoreRightMouseClick"
+                 PreviewMouseRightButtonUp="IgnoreRightMouseClick"
                  VirtualizingStackPanel.ScrollUnit="Pixel" 
                  ScrollViewer.HorizontalScrollBarVisibility="Disabled"
                  ItemContainerStyle="{StaticResource AudioListBoxItemStyle}" 
-                 ItemTemplate="{StaticResource LocalAudioItemTemplate}"/>
+                 ItemTemplate="{StaticResource LocalAudioItemTemplate}" 
+                 SelectedIndex="{Binding MainViewModel.CurrentPlayingIdx, Source={StaticResource MainLocator}, Mode=OneWay}"
+                 SelectedItem="{Binding MainViewModel.CurrentPlayingItem, Source={StaticResource MainLocator}, Mode=OneWay}">
+            <i:Interaction.Triggers>
+                <i:EventTrigger EventName="MouseLeftButtonUp">
+                    <i:InvokeCommandAction 
+                        Command="{Binding PlayCommand}" 
+                        CommandParameter="{Binding ElementName=AudiosList, Path=SelectedItem.Id}"/>
+                </i:EventTrigger>
+            </i:Interaction.Triggers>
+        </ListBox>
     </Grid>
 </UserControl>

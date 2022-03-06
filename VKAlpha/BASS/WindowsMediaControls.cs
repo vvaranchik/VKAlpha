@@ -1,6 +1,7 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Runtime.InteropServices.WindowsRuntime;
-using System.Windows.Threading;
+using System.Threading;
 using VKAlpha.Extensions;
 using VKAlpha.Helpers;
 using Windows.Media;
@@ -9,52 +10,49 @@ using Windows.Storage.Streams;
 
 namespace VKAlpha.BASS
 {
-    [Obsolete]
-    public static class WindowsMediaControls
+    public class WindowsMediaControls : IDisposable
     {
-        private static SystemMediaTransportControls systemMediaControls;
-        private static SystemMediaTransportControlsDisplayUpdater displayUpdater;
-        private static MusicDisplayProperties musicProperties;
-        private static InMemoryRandomAccessStream artworkStream;
+        private SystemMediaTransportControls systemMediaControls;
+        private SystemMediaTransportControlsDisplayUpdater displayUpdater;
+        private MusicDisplayProperties musicProperties;
+        private volatile InMemoryRandomAccessStream artworkStream;
 
-        private static void MediaButtonPressed(SystemMediaTransportControls sender, SystemMediaTransportControlsButtonPressedEventArgs args)
+        private void MediaButtonPressed(SystemMediaTransportControls sender, SystemMediaTransportControlsButtonPressedEventArgs args)
         {
             switch (args.Button)
             {
                 case SystemMediaTransportControlsButton.Stop:
-                    Dispatcher.CurrentDispatcher.Invoke(() => MainViewModelLocator.BassPlayer.Stop());
+                    MainViewModelLocator.BassPlayer.Stop();
                     break;
                 case SystemMediaTransportControlsButton.Play:
+                    MainViewModelLocator.MainViewModel.IsPlaying = true;
+                    break;
                 case SystemMediaTransportControlsButton.Pause:
-                   Dispatcher.CurrentDispatcher.Invoke(() => MainViewModelLocator.BassPlayer.PauseResume(true));
+                    MainViewModelLocator.MainViewModel.IsPlaying = false;
                     break;
                 case SystemMediaTransportControlsButton.Next:
-                    Dispatcher.CurrentDispatcher.Invoke(() => MainViewModelLocator.BassPlayer.Next());
+                    MainViewModelLocator.MainViewModel.ToNextTrack();
                     break;
                 case SystemMediaTransportControlsButton.Previous:
-                    Dispatcher.CurrentDispatcher.Invoke(() => MainViewModelLocator.BassPlayer.Prev());
+                    MainViewModelLocator.MainViewModel.ToPrevTrack();
                     break;
             }
         }
 
-        private static void PlaybackPositionChangeRequested(SystemMediaTransportControls sender, PlaybackPositionChangeRequestedEventArgs args) { }
+        private void PlaybackPositionChangeRequested(SystemMediaTransportControls sender, PlaybackPositionChangeRequestedEventArgs args) { }
 
-        private static void AutoRepeatModeChangeRequested(SystemMediaTransportControls sender, AutoRepeatModeChangeRequestedEventArgs args) { }
+        private void AutoRepeatModeChangeRequested(SystemMediaTransportControls sender, AutoRepeatModeChangeRequestedEventArgs args) { }
 
-        private static void ShuffleEnabledChangeRequested(SystemMediaTransportControls sender, ShuffleEnabledChangeRequestedEventArgs args) { }
+        private void ShuffleEnabledChangeRequested(SystemMediaTransportControls sender, ShuffleEnabledChangeRequestedEventArgs args) { }
 
-        private static void PlaybackRateChangeRequested(SystemMediaTransportControls sender, PlaybackRateChangeRequestedEventArgs args) { }
+        private void PlaybackRateChangeRequested(SystemMediaTransportControls sender, PlaybackRateChangeRequestedEventArgs args) { }
 
-        public async static void SetArtworkThumbnail(byte[] data)
+        public async void SetArtworkThumbnail(byte[] data)
         {
-            if (artworkStream != null)
-            {
-                artworkStream.Dispose();
-            }
             if (data == null)
             {
-                artworkStream = null;
-                displayUpdater.Thumbnail = null;
+                artworkStream.Dispose();
+                displayUpdater.Update();
                 return;
             }
             artworkStream = new InMemoryRandomAccessStream();
@@ -63,7 +61,7 @@ namespace VKAlpha.BASS
             displayUpdater.Update();
         }
 
-        public static void ChangeState(MediaPlaybackStatus state)
+        public void ChangeState(MediaPlaybackStatus state)
         {
             switch (state)
             {
@@ -75,19 +73,17 @@ namespace VKAlpha.BASS
                     systemMediaControls.PlaybackStatus = MediaPlaybackStatus.Paused;
                     break;
                 case MediaPlaybackStatus.Stopped:
-                    systemMediaControls.PlaybackStatus = MediaPlaybackStatus.Stopped;
+                case MediaPlaybackStatus.Closed:
+                    systemMediaControls.PlaybackStatus = MediaPlaybackStatus.Closed;
                     systemMediaControls.IsEnabled = false;
                     break;
             }
         }
 
-        public static void RefreshDisplayData(AudioModel audio)
+        public void RefreshDisplayData(AudioModel audio)
         {
-            if (displayUpdater.Type != MediaPlaybackType.Music)
-            {
-                displayUpdater.ClearAll();
-                displayUpdater.Type = MediaPlaybackType.Music;
-            }
+            artworkStream.Dispose();
+            displayUpdater.Thumbnail = null;
             if (audio != null)
             {
                 musicProperties.AlbumArtist = musicProperties.Artist = audio.Artist;
@@ -96,10 +92,11 @@ namespace VKAlpha.BASS
             displayUpdater.Update();
         }
 
-        public static void Initalize()
+        public WindowsMediaControls()
         {
+            artworkStream = new InMemoryRandomAccessStream();
             systemMediaControls = BackgroundMediaPlayer.Current.SystemMediaTransportControls;
-            systemMediaControls.PlaybackStatus = MediaPlaybackStatus.Closed;
+            systemMediaControls.PlaybackStatus = MediaPlaybackStatus.Stopped;
             systemMediaControls.IsEnabled = false;
             systemMediaControls.IsPlayEnabled = true;
             systemMediaControls.IsPauseEnabled = true;
@@ -120,15 +117,16 @@ namespace VKAlpha.BASS
             musicProperties = displayUpdater.MusicProperties;
         }
 
-        public static void Dispose()
+        public void Dispose()
         {
+            systemMediaControls.PlaybackStatus = MediaPlaybackStatus.Closed;
             systemMediaControls.ButtonPressed -= MediaButtonPressed;
             systemMediaControls.PlaybackPositionChangeRequested -= PlaybackPositionChangeRequested;
             systemMediaControls.PlaybackRateChangeRequested -= PlaybackRateChangeRequested;
             systemMediaControls.ShuffleEnabledChangeRequested -= ShuffleEnabledChangeRequested;
             systemMediaControls.AutoRepeatModeChangeRequested -= AutoRepeatModeChangeRequested;
 
-            SetArtworkThumbnail(null);
+            RefreshDisplayData(null);
             displayUpdater.ClearAll();
             systemMediaControls = null;
         }

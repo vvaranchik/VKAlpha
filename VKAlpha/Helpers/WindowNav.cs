@@ -53,7 +53,7 @@ namespace VKAlpha.Helpers
             if (e.Content == null)
                 return;
             if (e.ExtraData != null)
-                (e.Content as UserControl).DataContext = e.ExtraData;
+                (e.Content as System.Windows.FrameworkElement).DataContext = e.ExtraData;
         }
 
         public void ClearStack()

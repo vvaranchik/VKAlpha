@@ -16,7 +16,7 @@
 	"BelowMain": "#FF263981",
 	"AboveMain": "#FF263981",
 	"btnHovered": "#FF4169FF",
-	"checkBoxUncheked": "#FFffffff",
+	"checkBoxUnchecked": "#FFffffff",
 	"checkBoxChecked": "#FF4169FF",
 	"listboxItemHovered": "#FF2A2A2A"
 }

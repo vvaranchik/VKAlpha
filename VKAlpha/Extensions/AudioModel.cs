@@ -1,23 +1,38 @@
 ﻿using System.Collections.ObjectModel;
 using System.ComponentModel;
-using VKAlpha.BASS;
+using System.IO;
+using System.Threading;
 using VKAlpha.Helpers;
 
 namespace VKAlpha.Extensions
 {
     public class AudioModel : MonoVKLib.VK.Models.VKAudioModel, INotifyPropertyChanged
     {
-        private bool _coverRequested;
+        private bool _coverRequested = false;
         private System.Windows.Media.ImageSource _cover = null;
-        private byte[] _bitmapImage = null;
-        bool requesting = false;
+        private byte[] _imageByteData = null;
+        private bool requesting = false;
 
-        private string CoverPath => System.IO.Path.Combine("Cache", $"covers/{Id}.jpg");
+        public static bool IsAudioValid(AudioModel model)
+            => model != null && model != default;
+        
+        private string CoverPath
+        {
+            get
+            {
+                if (string.IsNullOrEmpty(Url))
+                    return null;
+                return Path.Combine("Cache", $"covers/{Id}.jpg");
+            }
+        }
 
         public byte[] ImageByteData
         {
-            get => _bitmapImage;
-            set => this.MutateVerbose(ref _bitmapImage, value, RaisePropertyChanged());
+            get => _imageByteData;
+            set
+            {
+                this.MutateVerbose(ref _imageByteData, value, RaisePropertyChanged());
+            }
         }
 
         private System.Windows.Media.ImageSource GetCoverFromBytes()
@@ -26,10 +41,12 @@ namespace VKAlpha.Extensions
                 return null;
             var bi = new System.Windows.Media.Imaging.BitmapImage();
             bi.BeginInit();
-            bi.StreamSource = new System.IO.MemoryStream(ImageByteData);
+            bi.StreamSource = new MemoryStream(ImageByteData);
             bi.EndInit();
             return bi;
         }
+
+        public bool IsPlaying { get; set; } = false;
 
         public System.Windows.Media.ImageSource Cover
         {
@@ -40,14 +57,13 @@ namespace VKAlpha.Extensions
                     _coverRequested = true;
                     GetCover();
                 }
-                WindowsMediaControls.SetArtworkThumbnail(ImageByteData);
                 return _cover ?? GetCoverFromBytes();
             }
             set => this.MutateVerbose(ref _cover, value, RaisePropertyChanged());
         }
 
         public static AudioModel VKModelToAudio(MonoVKLib.VK.Models.VKAudioModel vk)
-            => new AudioModel()
+            => new AudioModel
             {
                 AlbumId = vk.AlbumId,
                 Artist = vk.Artist,
@@ -74,11 +90,101 @@ namespace VKAlpha.Extensions
 
         private void GetCover()
         {
-            if (!MainViewModelLocator.Settings.load_track_covers || requesting || string.IsNullOrEmpty(CoverPath) || Artist == "Artist")
+            if (!MainViewModelLocator.Settings.load_track_covers || requesting || string.IsNullOrEmpty(CoverPath))
                 return;
 
             requesting = true;
-            CoverHelper.RequestCover(this);
+            token.Cancel();
+            token = new CancellationTokenSource();
+            _GetCover(token.Token);
+        }
+
+        private static readonly string[] separators = new[] { ",", "&", "&&", "feat", "feat.", "ft", "ft."/*, "("*/ };
+
+        private static CancellationTokenSource token = new CancellationTokenSource();
+
+        private async void _GetCover(CancellationToken token)
+        {
+            var path = Path.Combine("Cache", $"covers/{this.Id}.jpg");
+
+            if (File.Exists(path))
+            {
+                if (token.IsCancellationRequested)
+                {
+                    requesting = false;
+                    _coverRequested = false;
+                    return;
+                }
+                this.Cover = await CacheService.GetCachedImage(path);
+            }
+
+            var imageUri = await MainViewModelLocator.SpotifyHelper.Covers.GetAlbumCover(
+                 this.Artist
+                    .Replace(new[] { "[", "]" })
+                    .Split(separators, System.StringSplitOptions.RemoveEmptyEntries)[0],
+                this.Title);
+            if (token.IsCancellationRequested)
+            {
+                requesting = false;
+                _coverRequested = false;
+                return;
+            }
+            if (!string.IsNullOrEmpty(imageUri))
+            {
+                if (MainViewModelLocator.Settings.load_track_covers)
+                {
+                    System.Windows.Media.Imaging.BitmapImage image;
+                    if (!File.Exists(path))
+                    {
+                        image = await imageUri.GetImageSource();
+                        if (token.IsCancellationRequested)
+                        {
+                            requesting = false;
+                            _coverRequested = false;
+                            return;
+                        }
+                        var bytes = image.ToByteArray();
+
+                        if (MainViewModelLocator.Settings.cache_track_covers)
+                        {
+                            if (token.IsCancellationRequested)
+                            {
+                                requesting = false;
+                                _coverRequested = false;
+                                return;
+                            }
+                            using (var writer = File.OpenWrite(path))
+                            {
+                                await writer.WriteAsync(bytes, 0, bytes.Length);
+                                await writer.FlushAsync();
+                            }
+                        }
+                        if (token.IsCancellationRequested)
+                        {
+                            requesting = false;
+                            _coverRequested = false;
+                            return;
+                        }
+                        this.Cover = image;
+                        this.ImageByteData = bytes;
+                        MainViewModelLocator.SMCProvider.SetArtworkThumbnail(this.ImageByteData);
+                    }
+                    else
+                    {
+                        if (token.IsCancellationRequested)
+                        {
+                            requesting = false;
+                            _coverRequested = false;
+                            return;
+                        }
+                        image = await CacheService.GetCachedImage(path);
+                        var bytes = image.ToByteArray();
+                        this.ImageByteData = bytes;
+                        MainViewModelLocator.SMCProvider.SetArtworkThumbnail(bytes);
+                        this.Cover = image;
+                    }
+                }
+            }
         }
 
         public event PropertyChangedEventHandler PropertyChanged;

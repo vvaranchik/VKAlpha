@@ -1,6 +1,7 @@
 ﻿using System;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
+using System.Linq;
 using System.Windows.Threading;
 using Un4seen.Bass;
 using VKAlpha.Extensions;
@@ -11,12 +12,8 @@ namespace VKAlpha.BASS
 {
     public class BassAudioPlayer : INotifyPropertyChanged
     {
-        private AudioModel _current = new AudioModel() { Artist = "Artist", Title = "Title", OwnerId = -1, Duration = TimeSpan.FromSeconds(0) };
-        private bool _shuffle = false;
         private bool _repeat = false;
-        private bool _playing = false;
         private bool _muted = false;
-        private int nowPlaying = 0;
         private int stream = 0;
         private float _vol = MainViewModelLocator.Settings.volume;
         private float _oldVol;
@@ -27,26 +24,7 @@ namespace VKAlpha.BASS
 
         private object _isWorking = new object();
 
-        public bool IsShuffled { get => _shuffle; set { this.MutateVerbose(ref _shuffle, value, RaisePropertyChanged()); MainViewModelLocator.PlaylistControl.ShuffleCheck(); } }
-
         public bool IsRepeated { get => _repeat; set => this.MutateVerbose(ref _repeat, value, RaisePropertyChanged()); }
-
-        public bool IsPlaying { get => _playing; set => this.MutateVerbose(ref _playing, value, RaisePropertyChanged()); }
-
-        public AudioModel CurrentTrack
-        {
-            get => _current;
-            private set 
-            {
-                if (CurrentTrack?.Cover != null)
-                {
-                    CurrentTrack.Cover = null;
-                }
-                this.MutateVerbose(ref _current, value, RaisePropertyChanged()); 
-            }
-        }
-
-        public int CurrentTrackIndex => nowPlaying;
 
         public bool IsMuted
         {
@@ -92,13 +70,8 @@ namespace VKAlpha.BASS
             }
         }
 
-        private void SliderUpdateTick(object sender, EventArgs args)
-        {
-            //   if (stream == 0)
-            //       return;
-            //   SliderValue = Bass.BASS_ChannelBytes2Seconds(stream, Bass.BASS_ChannelGetPosition(stream));
-            OnPropChanged(nameof(SliderValue));
-        }
+        private void SliderUpdateTick(object sender, EventArgs args) => OnPropChanged(nameof(SliderValue));
+        
 
         public BassAudioPlayer()
         {
@@ -108,7 +81,7 @@ namespace VKAlpha.BASS
 
             if (!Bass.LoadMe())
             {
-                App.RaiseException(err_bass_dll, new DllNotFoundException(err_bass_dll));
+                App.RaiseException(err_bass_dll);
             }
 
             Bass.BASS_SetConfig(BASSConfig.BASS_CONFIG_DEV_DEFAULT, true);
@@ -117,10 +90,10 @@ namespace VKAlpha.BASS
             switch ((BASSError)plugin_load)
             {
                 case BASSError.BASS_ERROR_FILEOPEN:
-                    App.RaiseException(err_bass_plugin_not_found, new DllNotFoundException(err_bass_plugin_not_found));
+                    App.RaiseException(err_bass_plugin_not_found);
                     break;
                 case BASSError.BASS_ERROR_FILEFORM:
-                    App.RaiseException(err_bass_plugin, new AggregateException(err_bass_plugin));
+                    App.RaiseException(err_bass_plugin);
                     break;
             }
 
@@ -129,14 +102,13 @@ namespace VKAlpha.BASS
             _sliderUpdate = new DispatcherTimer(DispatcherPriority.Background) { Interval = TimeSpan.FromMilliseconds(250) };
             _sliderUpdate.Tick += SliderUpdateTick;
             _sliderUpdate.Start();
-            WindowsMediaControls.Initalize();
         }
 
         private void OnEndStream(int handle, int channel, int data, IntPtr user)
         {
             if (!IsRepeated)
             {
-                Next();
+                MainViewModelLocator.MainViewModel.ToNextTrack();
                 return;
             }
             Bass.BASS_ChannelSetPosition(stream, 0.0);
@@ -145,10 +117,10 @@ namespace VKAlpha.BASS
 
         public void Unload()
         {
-            Stop();
             lock (_isWorking)
             {
-                WindowsMediaControls.Dispose();
+                Stop();
+                MainViewModelLocator.SMCProvider.Dispose();
                 _sliderUpdate.Stop();
                 _sliderUpdate.Tick -= SliderUpdateTick;
                 Bass.BASS_Free();
@@ -160,97 +132,56 @@ namespace VKAlpha.BASS
         {
             lock (_isWorking)
             {
-                if (Bass.BASS_ChannelIsActive(stream) == BASSActive.BASS_ACTIVE_PLAYING) Bass.BASS_ChannelStop(stream);
-                if (_playing) _playing = false;
-                if (stream != 0) Bass.BASS_StreamFree(stream);
-            }
-            WindowsMediaControls.ChangeState(MediaPlaybackStatus.Stopped);
-        }
-
-        public void SelectTrack(string data)
-        {
-            foreach (var track in MainViewModelLocator.PlaylistControl.PlayingPlaylist)
-            {
-                if (track.FullData != data)
-                    continue;
-                nowPlaying = MainViewModelLocator.PlaylistControl.PlayingPlaylist.IndexOf(track);
-                break;
+                var state = Bass.BASS_ChannelIsActive(stream);
+                if (state == BASSActive.BASS_ACTIVE_PLAYING ||
+                    state == BASSActive.BASS_ACTIVE_STALLED ||
+                    state == BASSActive.BASS_ACTIVE_PAUSED)
+                {
+                    Bass.BASS_ChannelStop(stream);
+                    Bass.BASS_StreamFree(stream);
+                }
             }
         }
 
-        public void PlaySelected(int trackindex)
-        {
-            Stop();
-            if (nowPlaying != trackindex) nowPlaying = trackindex;
-            Play();
-        }
-
-        public void FindAndPlay(string fulldata)
-        {
-            SelectTrack(fulldata);
-            PlaySelected(nowPlaying);
-        }
-
-        private void Play()
+        public void Load(string url)
         {
             lock (_isWorking)
             {
-                stream = Bass.BASS_StreamCreateURL(MainViewModelLocator.PlaylistControl.PlayingPlaylist[nowPlaying].Url, 0, BASSFlag.BASS_STREAM_PRESCAN, null, MainWindow.Handle);
+                stream = Bass.BASS_StreamCreateURL(url, 0, BASSFlag.BASS_STREAM_PRESCAN, null, MainWindow.Handle);
                 if (stream == 0 && Bass.BASS_ErrorGetCode() == BASSError.BASS_ERROR_NONET)
                 {
-                    MainViewModelLocator.MainViewModel.MessageQueue.Enqueue("No Internet Connection Available");
+                    MainViewModelLocator.MainViewModel.MessageQueue.Enqueue("No internet connection available");
                     return;
                 }
-
                 Bass.BASS_ChannelSetAttribute(stream, BASSAttribute.BASS_ATTRIB_VOL, Volume);
                 Bass.BASS_ChannelSetSync(stream, BASSSync.BASS_SYNC_END, 0, syncOnStreamEnd, MainWindow.Handle);
-                Bass.BASS_ChannelPlay(stream, false);
-                CurrentTrack = MainViewModelLocator.PlaylistControl.PlayingPlaylist[nowPlaying];
-                if (!IsPlaying)
-                {
-                    IsPlaying = true;
-                }
-                WindowsMediaControls.RefreshDisplayData(CurrentTrack);
-                WindowsMediaControls.ChangeState(MediaPlaybackStatus.Playing);
             }
         }
 
-        public void PauseResume(bool notify = false)
+        public void Play()
         {
             lock (_isWorking)
             {
-                _playing = !_playing;
-                if (!_playing)
+                var state = Bass.BASS_ChannelIsActive(stream);
+                if (state == BASSActive.BASS_ACTIVE_PLAYING || stream == 0)
+                    return;
+                Bass.BASS_ChannelPlay(stream, false);
+            }
+        }
+
+        public void PauseResume(bool playing)
+        {
+            lock (_isWorking)
+            {
+                var state = Bass.BASS_ChannelIsActive(stream);
+                if (playing && state != BASSActive.BASS_ACTIVE_PLAYING)
                 {
-                    WindowsMediaControls.ChangeState(MediaPlaybackStatus.Playing);
                     Bass.BASS_ChannelPlay(stream, false);
                 }
-                else
+                else if (!playing && state == BASSActive.BASS_ACTIVE_PLAYING)
                 {
-                    WindowsMediaControls.ChangeState(MediaPlaybackStatus.Paused);
                     Bass.BASS_ChannelPause(stream);
                 }
-                if (notify) OnPropChanged(nameof(IsPlaying));
-            }
-        }
-
-        public void Next()
-        {
-            if (MainViewModelLocator.PlaylistControl.PlayingPlaylist.Count > 0)
-            {
-                if (++nowPlaying >= MainViewModelLocator.PlaylistControl.PlayingPlaylist.Count)
-                    nowPlaying = 0;
-                PlaySelected(nowPlaying);
-            }
-        }
-
-        public void Prev()
-        {
-            if (MainViewModelLocator.PlaylistControl.PlayingPlaylist.Count > 0)
-            {
-                if (--nowPlaying < 0)
-                    nowPlaying = MainViewModelLocator.PlaylistControl.PlayingPlaylist.Count - 1;
-                PlaySelected(nowPlaying);
             }
         }
 

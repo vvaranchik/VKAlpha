@@ -1,5 +1,7 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Linq;
 using System.Threading.Tasks;
 using System.Windows.Input;
 using MonoVKLib.VK.Exceptions;
@@ -8,22 +10,34 @@ using VKAlpha.Helpers;
 
 namespace VKAlpha.ViewModels
 {
-    public class AudiosListViewModel
+    public class AudiosListViewModel : AbsListViewModel<AudioModel>
     {
         string captchaSid = null, captchaKey = null;
-
-        private ObservableCollection<AudioModel> _collection = new ObservableCollection<AudioModel>();
 
         public ICommand PlayCommand { get; private set; }
 
         public ICommand GetRecommendationsCmd { get; private set; }
 
-        public ObservableCollection<AudioModel> collection { get => _collection; private set => _collection = value; }
+        private void CheckPlaying()
+        {
+            if(MainViewModelLocator.MainViewModel.CurrentTrack.OwnerId == Collection[0].OwnerId &&
+                Collection.Count == MainViewModelLocator.PlaylistControl.PlayingPlaylist.Count)
+            {
+                var playlist = MainViewModelLocator.PlaylistControl.PlayingPlaylist;
+                var currentTrack = playlist.FirstOrDefault(x => x.IsPlaying);
+                if (AudioModel.IsAudioValid(currentTrack))
+                {
+                    currentTrack = Collection.First(x => x.Id == currentTrack.Id);
+                    currentTrack.IsPlaying = true;
+                }
+            }
+        }
 
         private void InitCommands()
         {
             PlayCommand = new RelayCommand(Play);
             GetRecommendationsCmd = new RelayCommand(GetRecommendations);
+            _backup = Collection;
         }
 
         public AudiosListViewModel(ulong uid)
@@ -50,16 +64,32 @@ namespace VKAlpha.ViewModels
             InitCommands();
         }
 
+        public override void HandleDataChange(string query)
+        {
+            if (query == "")
+            {
+                Collection = _backup;
+                MainViewModelLocator.PlaylistControl.CheckPlaylist(Collection);
+                return;
+            }
+            var result = _backup.Where(x => x.FullData.Contains(query, StringComparison.InvariantCultureIgnoreCase));
+            if (AudioModel.IsAudioValid(result.FirstOrDefault()))
+            {
+                Collection = new ObservableCollection<AudioModel>(result);
+            }
+            MainViewModelLocator.PlaylistControl.CheckPlaylist(Collection);
+        }
+
         private void Init(ICollection<AudioModel> recommendations)
         {
             MainViewModelLocator.WindowDialogs.OpenDialog(new Dialogs.Loading().LoadingDial.DialogContent);
             foreach (var audio in recommendations)
             {
                 if (!string.IsNullOrEmpty(audio.Url))
-                    collection.Add(audio);
+                    Collection.Add(audio);
             }
             MainViewModelLocator.WindowDialogs.CloseDialog();
-            MainViewModelLocator.PlaylistControl.NullCheckPlaylist(collection);
+            MainViewModelLocator.PlaylistControl.NullCheckPlaylist(Collection);
         }
 
         private async void Init(ulong uid, long albumId = 0)
@@ -104,11 +134,11 @@ namespace VKAlpha.ViewModels
                     Navigation.Get.GoBack();
                     return;
                 }
-                collection.Clear();
+                Collection.Clear();
                 tsk.Result.ForEach((a) =>
                 {
                     if (!string.IsNullOrEmpty(a.Url))
-                        collection.Add(AudioModel.VKModelToAudio(a));
+                        Collection.Add(AudioModel.VKModelToAudio(a));
                 });
                 //if (uid == MainViewModelLocator.Vk.AccessToken.UserId && collection.Count > 100)
                 //{
@@ -118,6 +148,7 @@ namespace VKAlpha.ViewModels
                 //}
             }, TaskScheduler.FromCurrentSynchronizationContext());
             MainViewModelLocator.WindowDialogs.CloseDialog();
+            CheckPlaying();
             if (MainViewModelLocator.MainViewModel.IsSearchActive) MainViewModelLocator.MainViewModel.IsSearchActive = false;
         }
 
@@ -129,7 +160,7 @@ namespace VKAlpha.ViewModels
                 var result = await MainViewModelLocator.Vk.VkAudio.Search(query, captchaSid: captchaSid, captchaKey: captchaKey);
                 captchaKey = captchaSid = null;
                 return result;
-            }).ContinueWith(async(tsk) =>
+            }).ContinueWith(async (tsk) =>
             {
                 MainViewModelLocator.WindowDialogs.CloseDialog();
                 if (tsk.Result.IsEmpty())
@@ -165,10 +196,11 @@ namespace VKAlpha.ViewModels
                 tsk.Result.ForEach((a) =>
                 {
                     if (!string.IsNullOrEmpty(a.Url))
-                        collection.Add(AudioModel.VKModelToAudio(a));
+                        Collection.Add(AudioModel.VKModelToAudio(a));
                 });
             }, TaskScheduler.FromCurrentSynchronizationContext());
             MainViewModelLocator.WindowDialogs.CloseDialog();
+            CheckPlaying();
             if (!MainViewModelLocator.MainViewModel.IsSearchActive) MainViewModelLocator.MainViewModel.IsSearchActive = true;
         }
 
@@ -177,7 +209,7 @@ namespace VKAlpha.ViewModels
             Collection<AudioModel> tracks = new Collection<AudioModel>();
             if (n > 0)
             {
-                var audios = collection[0].OwnerId == MainViewModelLocator.Settings.userid ? collection : AudioModel.VKArrayToAudioCollection(await MainViewModelLocator.Vk.VkAudio.Get());
+                var audios = Collection[0].OwnerId == MainViewModelLocator.Settings.userid ? Collection : AudioModel.VKArrayToAudioCollection(await MainViewModelLocator.Vk.VkAudio.Get());
                 for (var _ = 0; _ < n; _++)
                 {
                     tracks.Add(audios.GetRandomElement());
@@ -278,8 +310,13 @@ namespace VKAlpha.ViewModels
 
         private void Play(object o)
         {
-            MainViewModelLocator.PlaylistControl.CheckPlaylist(collection);
-            MainViewModelLocator.BassPlayer.FindAndPlay(o.ToString());
+            if (o != null)
+            {
+                MainViewModelLocator.MainViewModel.CurrentTrack.Cover = null;
+                MainViewModelLocator.MainViewModel.CurrentTrack.IsPlaying = false;
+                MainViewModelLocator.PlaylistControl.CheckPlaylist(Collection);
+                MainViewModelLocator.MainViewModel.PlayTrack((long)o);
+            }
         }
     }
 }

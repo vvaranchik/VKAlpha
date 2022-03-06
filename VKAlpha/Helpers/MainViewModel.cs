@@ -4,10 +4,11 @@ using System.ComponentModel;
 using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
-using System.Windows.Controls;
+using System.Windows;
 using System.Windows.Input;
 using VKAlpha.Controls;
 using VKAlpha.Extensions;
+using Windows.Media;
 
 namespace VKAlpha.Helpers
 {
@@ -16,12 +17,16 @@ namespace VKAlpha.Helpers
         private bool isSidebarVisible = false;
 
         private string searchQuery = "";
+        
+        private bool isPlaying = false;
+
+        private bool isShuffled = false;
 
         private ISnackbarMessageQueue _msgQueue;
+        #region Commands
+        public ICommand CmdCoverLoaded { get; private set; }
 
         public ICommand PlayCommand { get; private set; }
-
-        public ICommand PlayPause { get; private set; }
 
         public ICommand SkipPrev { get; private set; }
 
@@ -58,10 +63,91 @@ namespace VKAlpha.Helpers
         public ICommand Upload { get; private set; }
 
         public ICommand OpenSelector { get; private set; }
-
+        #endregion
         public ISnackbarMessageQueue MessageQueue { get => _msgQueue; private set => _msgQueue = value; }
 
-        public string SearchQuery { get => searchQuery; set => this.MutateVerbose(ref searchQuery, value, RaisePropertyChanged()); }
+        public object FrameMainFE { get; set; }
+
+        public bool IsPlaying 
+        {
+            get => isPlaying;
+            set
+            {
+                this.MutateVerbose(ref isPlaying, value, RaisePropertyChanged());
+                PlayPause();
+            }
+        }
+
+        public bool IsShuffled
+        {
+            get => isShuffled;
+            set
+            {
+                this.MutateVerbose(ref isShuffled, value, RaisePropertyChanged());
+                MainViewModelLocator.PlaylistControl.ShuffleCheck();
+            }
+        }
+
+        public AudioModel CurrentTrack
+        {
+            get
+            {
+                var playlist = MainViewModelLocator.PlaylistControl.PlayingPlaylist;
+                var currentTrack = playlist.FirstOrDefault(x => x.IsPlaying);
+                if (AudioModel.IsAudioValid(currentTrack))
+                {
+                    return currentTrack;
+                }
+                return new AudioModel { Artist = "Arist", Title = "Title", IsPlaying = false };
+            }
+        }
+
+        public AudioModel CurrentPlayingItem
+        {
+            get
+            {
+                var vm = GetViewModel<ViewModels.AudiosListViewModel>();
+                if (vm != null || vm != default)
+                {
+                    var audio = vm.Collection.FirstOrDefault(x => x.Id == CurrentTrack.Id);
+                    if (AudioModel.IsAudioValid(audio))
+                    {
+                        if (audio.OwnerId == CurrentTrack.OwnerId && 
+                            vm.Collection.Count == MainViewModelLocator.PlaylistControl.PlayingPlaylist.Count)
+                        {
+                            return audio;
+                        }
+                    }
+                }
+                return null;
+            }
+        }
+
+        public int CurrentPlayingIdx
+        {
+            get
+            {
+                var item = CurrentPlayingItem;
+                if (AudioModel.IsAudioValid(item))
+                {
+                    var vm = GetViewModel<ViewModels.AudiosListViewModel>();
+                    return vm.Collection.IndexOf(item);
+                }
+                return -1;
+            }
+        }
+
+        public string SearchQuery
+        {
+            get => searchQuery;
+            set
+            {
+                if (searchQuery == value) return;
+                this.MutateVerbose(ref searchQuery, value, RaisePropertyChanged(), nameof(SearchQuery));
+                var vm = GetViewModel<ViewModels.IListViewModel>();
+                vm.HandleDataChange(searchQuery);
+            }
+        }
 
         public bool IsSearchActive { get; set; } = false;
 
@@ -76,13 +162,28 @@ namespace VKAlpha.Helpers
             MainViewModelLocator.Settings.Save();
         }
 
+        private T GetViewModel<T>() where T : ViewModels.IViewModel
+        {
+            if (FrameMainFE != null)
+            {
+                var ctx = (FrameMainFE as FrameworkElement).DataContext;
+                if (ctx is T)
+                {
+                    return (T)ctx;
+                }
+            }
+            return default;
+        }
+
         private void RemoveSong(object data)
         {
-            var collection = (((App.Current.MainWindow as MainWindow).FrameMain.Content as UserControl).DataContext as ViewModels.AudiosListViewModel).collection;
+            var vm = GetViewModel<ViewModels.AudiosListViewModel>();
+            var collection = vm.Collection;
             var item = collection.Where(selector => selector.FullData == (string)data).FirstOrDefault();
             MainViewModelLocator.Vk.VkAudio.RemoveSong(item.Id, item.OwnerId);
-            collection.Remove(item);
-            MainViewModelLocator.PlaylistControl.PlayingPlaylist.Remove(item);
+            vm.Remove(item);
+            if (!item.IsPlaying)
+                MainViewModelLocator.PlaylistControl.PlayingPlaylist.Remove(item);
             _msgQueue.Enqueue($"{item.FullData} removed from playlist");
         }
 
@@ -100,7 +201,7 @@ namespace VKAlpha.Helpers
                 return await MainViewModelLocator.Vk.VkAudio.GetLyrics(item.LyricsId);
             }).ContinueWith(tsk =>
             {
-                if (tsk.Result != null)
+                if (tsk.Result != null && tsk.Result != string.Empty)
                 {
                     var dialog = new Dialogs.Lyrics();
                     dialog.tbLyrics.Text = tsk.Result;
@@ -114,11 +215,117 @@ namespace VKAlpha.Helpers
             }, TaskScheduler.FromCurrentSynchronizationContext());
         }
 
+        private void PlayPause(object _ = null)
+        {
+            lock (syncRoot)
+            {
+                MainViewModelLocator.BassPlayer.PauseResume(IsPlaying);
+                if (IsPlaying)
+                {
+                    MainViewModelLocator.SMCProvider.ChangeState(MediaPlaybackStatus.Playing);
+                }
+                else
+                {
+                    MainViewModelLocator.SMCProvider.ChangeState(MediaPlaybackStatus.Paused);
+                }
+            }
+        }
+
+        object syncRoot = new object();
+
+        private int StopPlaying()
+        {
+            lock (syncRoot)
+            {
+                MainViewModelLocator.BassPlayer.Stop();
+                MainViewModelLocator.SMCProvider.ChangeState(MediaPlaybackStatus.Changing);
+                var playlist = MainViewModelLocator.PlaylistControl.PlayingPlaylist;
+                var currentTrack = playlist.FirstOrDefault(x => x.IsPlaying);
+                if (AudioModel.IsAudioValid(currentTrack))
+                {
+                    currentTrack.Cover = null;
+                    currentTrack.IsPlaying = false;
+                    return playlist.IndexOf(currentTrack);
+                }
+                return -1;
+            }
+        }
+
+        public void PlayTrack(int idx)
+        {
+            lock (syncRoot)
+            {
+                StopPlaying();
+                var playlist = MainViewModelLocator.PlaylistControl.PlayingPlaylist;
+                var currentTrack = playlist[idx];
+                if (AudioModel.IsAudioValid(currentTrack))
+                {
+                    currentTrack.IsPlaying = true;
+                    MainViewModelLocator.BassPlayer.Load(currentTrack.Url);
+                    IsPlaying = true;
+                    MainViewModelLocator.BassPlayer.Play();
+                    OnPropChanged(nameof(CurrentTrack));
+                    OnPropChanged(nameof(CurrentPlayingItem));
+                    MainViewModelLocator.SMCProvider.RefreshDisplayData(currentTrack);
+                    MainViewModelLocator.SMCProvider.ChangeState(MediaPlaybackStatus.Playing);
+                }
+            }
+        }
+
+        public void PlayTrack(long id)
+        {
+            lock (syncRoot)
+            {
+                StopPlaying();
+                var playlist = MainViewModelLocator.PlaylistControl.PlayingPlaylist;
+                var currentTrack = playlist.FirstOrDefault(x => x.Id == id);
+                if (AudioModel.IsAudioValid(currentTrack))
+                {
+                    currentTrack.IsPlaying = true;
+                    MainViewModelLocator.BassPlayer.Load(currentTrack.Url);
+                    IsPlaying = true;
+                    MainViewModelLocator.BassPlayer.Play();
+                    OnPropChanged(nameof(CurrentTrack));
+                    OnPropChanged(nameof(CurrentPlayingItem));
+                    MainViewModelLocator.SMCProvider.RefreshDisplayData(currentTrack);
+                    MainViewModelLocator.SMCProvider.ChangeState(MediaPlaybackStatus.Playing);
+                }
+            }
+        }
+
+        public void ToNextTrack(object _ = null)
+        {
+            lock (syncRoot)
+            {
+                var prev = StopPlaying();
+                var playlist = MainViewModelLocator.PlaylistControl.PlayingPlaylist;
+                if (++prev > playlist.Count - 1)
+                {
+                    prev = 0;
+                }
+                PlayTrack(prev);
+            }
+        }
+
+        public void ToPrevTrack(object _ = null)
+        {
+            lock (syncRoot)
+            {
+                var prev = StopPlaying();
+                var playlist = MainViewModelLocator.PlaylistControl.PlayingPlaylist;
+                if (--prev < 0)
+                {
+                    prev = playlist.Count - 1;
+                }
+                PlayTrack(prev);
+            }
+        }
+
         private void InitCommands()
         {
-            PlayCommand = new RelayCommand((o) => MainViewModelLocator.BassPlayer.PauseResume());
-            SkipPrev = new RelayCommand((o) => MainViewModelLocator.BassPlayer.Prev());
-            SkipNext = new RelayCommand((o) => MainViewModelLocator.BassPlayer.Next());
+            PlayCommand = new RelayCommand(PlayPause);
+            SkipPrev = new RelayCommand(ToPrevTrack);
+            SkipNext = new RelayCommand(ToNextTrack);
             GoForward = new RelayCommand((o) => Navigation.Get.GoForward());
             GoBackward = new RelayCommand((o) => Navigation.Get.GoBack());
             CloseDialog = new RelayCommand((o) => MainViewModelLocator.WindowDialogs.CloseDialog());
@@ -234,5 +441,8 @@ namespace VKAlpha.Helpers
         public event PropertyChangedEventHandler PropertyChanged;
 
         private Action<PropertyChangedEventArgs> RaisePropertyChanged() => args => PropertyChanged?.Invoke(this, args);
+
+        private void OnPropChanged([System.Runtime.CompilerServices.CallerMemberName] string name = null) 
+            => RaisePropertyChanged().Invoke(new PropertyChangedEventArgs(name));
     }
 }

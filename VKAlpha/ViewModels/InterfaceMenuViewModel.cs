@@ -51,36 +51,41 @@ namespace VKAlpha.ViewModels
             });
         }
 
-        void InitLists()
+        string[] GetResourcesList(string path)
         {
-            languages = new List<string>();
-            themes = new List<string>();
-            themes_filenames = new List<string>();
+            var pth = Path.Combine("./Resources/", path);
+            if (!Directory.Exists(pth))
+                App.RaiseException("Current installation of VKAlpha is broken. Please, reinstall the app.");
+            var files = Directory.GetFiles(pth, "*.json");
+            return files;
+        }
 
+        void LoadLanguages()
+        {
+            var langFiles = GetResourcesList("Lang/");
             var settings = new JsonSerializerSettings { MissingMemberHandling = MissingMemberHandling.Error };
-            if (!Directory.Exists(".\\Resources\\Lang\\"))
-                App.CreateDefaultSetup(true, false);
-            var langFiles = Directory.GetFiles(".\\Resources\\Lang\\", "*.json");
-            foreach (var langFile in langFiles)
+            foreach(var lang in langFiles)
             {
                 try
                 {
-                    var jsonLang = JsonConvert.DeserializeObject<Resources.Lang.LangModel>(File.ReadAllText(langFile), settings);
+                    var jsonLang = JsonConvert.DeserializeObject<Resources.Lang.LangModel>(File.ReadAllText(lang), settings);
                     languages.Add(jsonLang.language);
                     if (MainViewModelLocator.Settings.lang == jsonLang.language)
                         CurrentLang = jsonLang.language;
                 }
                 catch (JsonSerializationException) { continue; }
             }
+        }
 
-            if (!Directory.Exists(".\\Resources\\Themes\\"))
-                App.CreateDefaultSetup(false, true);
-            var themeFiles = Directory.GetFiles(".\\Resources\\Themes\\", "*.json");
-            foreach (var themeFile in themeFiles)
+        void LoadThemes()
+        {
+            var themeFiles = GetResourcesList("Themes/");
+            var settings = new JsonSerializerSettings { MissingMemberHandling = MissingMemberHandling.Error };
+            foreach (var theme in themeFiles)
             {
                 try
                 {
-                    var jsonTheme = JsonConvert.DeserializeObject<Resources.Themes.ThemeModel>(File.ReadAllText(themeFile), settings);
+                    var jsonTheme = JsonConvert.DeserializeObject<Resources.Themes.ThemeModel>(File.ReadAllText(theme), settings);
                     themes.Add(jsonTheme.name);
                     themes_filenames.Add(jsonTheme.shortname);
                     if (MainViewModelLocator.Settings.theme == jsonTheme.shortname)
@@ -88,6 +93,15 @@ namespace VKAlpha.ViewModels
                 }
                 catch (JsonSerializationException) { continue; }
             }
+        }
+
+        void InitLists()
+        {
+            languages = new List<string>();
+            themes = new List<string>();
+            themes_filenames = new List<string>();
+            LoadLanguages();
+            LoadThemes();
             ignore_on_startup = false;
         }
 

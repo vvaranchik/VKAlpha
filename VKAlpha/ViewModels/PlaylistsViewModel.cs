@@ -1,4 +1,5 @@
-﻿using System.Collections.ObjectModel;
+﻿using System;
+using System.Collections.ObjectModel;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Windows.Input;
@@ -7,18 +8,29 @@ using VKAlpha.Helpers;
 
 namespace VKAlpha.ViewModels
 {
-    public class PlaylistsViewModel
+    public class PlaylistsViewModel : AbsListViewModel<MonoVKLib.VK.Models.VKPlaylistModel>
     {
-        private ObservableCollection<MonoVKLib.VK.Models.VKPlaylistModel> _collection = new ObservableCollection<MonoVKLib.VK.Models.VKPlaylistModel>();
-
         public ICommand LoadPlaylist { get; private set; }
-
-        public ObservableCollection<MonoVKLib.VK.Models.VKPlaylistModel> collection { get => _collection; private set => _collection = value; }
 
         public PlaylistsViewModel(ulong uid)
         {
             Init(uid);
             LoadPlaylist = new RelayCommand((o) => LoadUserPlaylist(uid, (long)o));
+            _backup = Collection;
+        }
+
+        public override void HandleDataChange(string query)
+        {
+            if (query == "")
+            {
+                Collection = _backup;
+                return;
+            }
+            var result = _backup.Where(x => x.Title.Contains(query, StringComparison.InvariantCultureIgnoreCase));
+            if (result != null && result.FirstOrDefault() != default)
+            {
+                Collection = new ObservableCollection<MonoVKLib.VK.Models.VKPlaylistModel>(result);
+            }
         }
 
         private async void Init(ulong uid)
@@ -51,12 +63,12 @@ namespace VKAlpha.ViewModels
                         }
                     }
                     
-                    collection.Add(a);
+                    Collection.Add(a);
                 });
                 
                 if (uid == MainViewModelLocator.Vk.AccessToken.UserId)
                 {
-                    collection.Add(new MonoVKLib.VK.Models.VKPlaylistModel { Title = "Create new playlist", Photo = logo, Id = -2 });
+                    Collection.Add(new MonoVKLib.VK.Models.VKPlaylistModel { Title = "Create new playlist", Photo = logo, Id = -2 });
                 }
             }, TaskScheduler.FromCurrentSynchronizationContext());
             MainViewModelLocator.WindowDialogs.CloseDialog();

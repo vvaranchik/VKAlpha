@@ -8,7 +8,7 @@ namespace VKAlpha.Helpers
 {
     public static class CacheService
     {
-        public static async Task<ImageSource> GetCachedImage(string path, AudioModel model)
+        public static async Task<System.Windows.Media.Imaging.BitmapImage> GetCachedImage(string path, AudioModel model = null)
         {
             if (File.Exists(path))
             {
@@ -23,20 +23,16 @@ namespace VKAlpha.Helpers
                     bi.BeginInit();
                     bi.StreamSource = ms;
                     bi.EndInit();
-                    ms.Flush();
-                    stream.Flush();
                 }
-                model.ImageByteData = ms.GetBuffer();
                 return bi;
             }
-            BASS.WindowsMediaControls.SetArtworkThumbnail(null);
             return null;
         }
 
-        public static async Task<ImageSource> SetCover(string url, string path, AudioModel model)
+        public static async void SetCover(string url, string path, AudioModel model)
         {
             if (string.IsNullOrEmpty(url) || string.IsNullOrEmpty(path))
-                return null;
+                return;
             System.Windows.Media.Imaging.BitmapImage image = null;
             if (MainViewModelLocator.Settings.load_track_covers)
             {
@@ -64,11 +60,11 @@ namespace VKAlpha.Helpers
                         }
                         model.ImageByteData = bytes;
                     }
-                    return image;
+                    model.Cover = image;
                 }
-                else return await GetCachedImage(path, model);
+                else 
+                    model.Cover = await GetCachedImage(path, model);
             }
-            return null;
         }
 
         public static string GetSafeFileName(string input)

@@ -7,7 +7,7 @@
              mc:Ignorable="d" 
              d:DesignHeight="450" d:DesignWidth="800" Name="FriendListV">
     <Grid>
-        <ListBox Name="FriendsList" VirtualizingStackPanel.ScrollUnit="Pixel" ScrollViewer.HorizontalScrollBarVisibility="Disabled" ItemsSource="{Binding collection}"
+        <ListBox Name="FriendsList" VirtualizingStackPanel.ScrollUnit="Pixel" ScrollViewer.HorizontalScrollBarVisibility="Disabled" ItemsSource="{Binding Collection}"
                  ItemContainerStyle="{StaticResource FriendListBoxItemStyle}" Style="{StaticResource CommonListBoxStyle}" ItemTemplate="{StaticResource FriendItemTemplate}">
             <ListBox.ItemsPanel>
                 <ItemsPanelTemplate>

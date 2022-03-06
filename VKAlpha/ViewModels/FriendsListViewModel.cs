@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Threading.Tasks;
@@ -8,21 +9,32 @@ using VKAlpha.Helpers;
 
 namespace VKAlpha.ViewModels
 {
-    public class FriendsListViewModel
+    public class FriendsListViewModel : AbsListViewModel<MonoVKLib.VK.Models.VKUserProfile>
     {
-        private ObservableCollection<MonoVKLib.VK.Models.VKUserProfile> _collection = new ObservableCollection<MonoVKLib.VK.Models.VKUserProfile>();
-
         public ICommand GetFriendAudios { get; private set; }
 
         public ICommand GetFriendsOf { get; private set; }
 
-        public ObservableCollection<MonoVKLib.VK.Models.VKUserProfile> collection { get => _collection; private set => _collection = value; }
-
         public FriendsListViewModel(ulong uid)
         {
             Init(uid);
+            _backup = Collection;
             GetFriendsOf = new RelayCommand(LoadFriendsOfFriend);
             GetFriendAudios = new RelayCommand(LoadFriendAudios);
+        }
+
+        public override void HandleDataChange(string query)
+        {
+            if (query == "")
+            {
+                Collection = _backup;
+                return;
+            }
+            var result = _backup.Where(x => x.Name.Contains(query, StringComparison.InvariantCultureIgnoreCase));
+            if (result != null && result.FirstOrDefault() != default)
+            {
+                Collection = new ObservableCollection<MonoVKLib.VK.Models.VKUserProfile>(result);
+            }
         }
 
         private async void Init(ulong uid)
@@ -65,7 +77,7 @@ namespace VKAlpha.ViewModels
                 }
                 tsk.Result.ForEach(a =>
                 {
-                    collection.Add(a);
+                    Collection.Add(a);
                 });
             }, TaskScheduler.FromCurrentSynchronizationContext());
             MainViewModelLocator.WindowDialogs.CloseDialog();
@@ -74,7 +86,7 @@ namespace VKAlpha.ViewModels
         private void LoadFriendAudios(object o)
         {
             Navigation.Get.Navigate("AudiosListView", new AudiosListViewModel(ulong.Parse(o.ToString())));
-            if (MainViewModelLocator.BassPlayer.IsShuffled) MainViewModelLocator.PlaylistControl.RequstShuffle = true;
+            if (MainViewModelLocator.MainViewModel.IsShuffled) MainViewModelLocator.PlaylistControl.RequstShuffle = true;
             MainViewModelLocator.MainViewModel.LoadPlaylists(ulong.Parse(o.ToString()), 1);
         }
 

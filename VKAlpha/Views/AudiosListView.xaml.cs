@@ -1,9 +1,4 @@
-﻿using System.Linq;
-using System.Threading.Tasks;
-using System.Windows.Controls;
-using System.Windows.Input;
-using VKAlpha.Extensions;
-using dbg = System.Diagnostics.Trace;
+﻿using System.Windows.Controls;
 
 namespace VKAlpha.Views
 {
@@ -12,6 +7,11 @@ namespace VKAlpha.Views
         public AudiosListView()
         {
             InitializeComponent();
+        }
+
+        private void IgnoreRightMouseClick(object _, System.Windows.Input.MouseButtonEventArgs e)
+        {
+            e.Handled = true;
         }
     }
 }

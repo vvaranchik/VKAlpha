@@ -2,7 +2,6 @@
 using System.Linq;
 using System.Windows.Interop;
 using VKAlpha.Helpers;
-using System.Windows.Controls;
 using VKAlpha.Extensions;
 
 namespace VKAlpha
@@ -14,7 +13,6 @@ namespace VKAlpha
         public MainWindow()
         {
             InitializeComponent();
-            DataContext = MainViewModelLocator.MainViewModel;
         }
 
         private void MetroWindow_Initialized(object sender, EventArgs e)
@@ -35,75 +33,30 @@ namespace VKAlpha
             Handle = new WindowInteropHelper(this).Handle;
         }
 
-        // Breaking mvvm pattern here, need more fancy moves without breaking mvvm pattern
-        private void tbSearchQuery_TextChanged(object sender, TextChangedEventArgs e)
-        {
-            string query = tbSearchQuery.Text;
-            dynamic page = (UserControl)FrameMain.Content;
-
-            if (FrameMain.Content.GetType().Name == "AudiosListView")
-            {
-                var vm = (FrameMain.Content as UserControl).DataContext as ViewModels.AudiosListViewModel;
-                if (query == "")
-                {
-                    page.AudiosList.ItemsSource = vm.collection;
-                    return;
-                }
-                var result = from items in vm.collection
-                             let data = items.FullData
-                             where data.Contains(query, StringComparison.OrdinalIgnoreCase)
-                             select items;
-                if (result != null && result.FirstOrDefault() != default)
-                    page.AudiosList.ItemsSource = result;
-            }
-            else if (FrameMain.Content.GetType().Name == "FriendsListView")
-            {
-                var vm = (FrameMain.Content as UserControl).DataContext as ViewModels.FriendsListViewModel;
-                if (query == "")
-                {
-                    page.FriendsList.ItemsSource = vm.collection;
-                    return;
-                }
-                var result = from items in vm.collection
-                             let data = items.Name
-                             where data.Contains(query, StringComparison.OrdinalIgnoreCase)
-                             select items; 
-                if (result != null && result.FirstOrDefault() != default)
-                    page.FriendsList.ItemsSource = result;
-            }
-            else if (FrameMain.Content.GetType().Name == "PlaylistsView")
-            {
-                var vm = (FrameMain.Content as UserControl).DataContext as ViewModels.PlaylistsViewModel;
-                if (query == "")
-                {
-                    page.PlaylistList.ItemsSource = vm.collection;
-                    return;
-                }
-                var result = from items in vm.collection
-                             let data = items.Title
-                             where data.Contains(query, StringComparison.OrdinalIgnoreCase)
-                             select items;
-                if (result != null && result.FirstOrDefault() != default)
-                    page.PlaylistList.ItemsSource = result;
-            }
-        }
-
         private void TextBlock_PreviewMouseUp(object sender, System.Windows.Input.MouseButtonEventArgs e)
         {
             if (FrameMain.Content.GetType().Name == "AudiosListView")
             {
                 var audiosView = (Views.AudiosListView)FrameMain.Content;
-                var vm = (FrameMain.Content as UserControl).DataContext as ViewModels.AudiosListViewModel;
-                if (MainViewModelLocator.BassPlayer.CurrentTrack.OwnerId != vm.collection[0].OwnerId && !MainViewModelLocator.MainViewModel.IsSearchActive) {
+                var list = audiosView.AudiosList.ItemsSource.Cast<AudioModel>();
+                var playing = MainViewModelLocator.MainViewModel.CurrentPlayingItem;
+                var first = list.FirstOrDefault();
+
+                if (list.Count() == 0 ||
+                    !AudioModel.IsAudioValid(first) || 
+                    !AudioModel.IsAudioValid(playing) ||
+                    list.Count() != MainViewModelLocator.PlaylistControl.PlayingPlaylist.Count ||
+                    first.OwnerId != playing.OwnerId &&
+                    !MainViewModelLocator.MainViewModel.IsSearchActive)
+                {
                     return;
                 }
-                var result = from items in vm.collection
-                             let data = items.FullData
-                             where data.Contains(MainViewModelLocator.BassPlayer.CurrentTrack.FullData, StringComparison.OrdinalIgnoreCase)
-                             select items;
-                if (result != null && result.FirstOrDefault() != default)
-                    audiosView.AudiosList.ScrollIntoView(result.ToList()[0]);
-                //audiosView.AudiosList.ScrollIntoView(MainViewModelLocator.BassPlayer.CurrentTrack);
+                //var result = list.FirstOrDefault(x => playing.FullData.Contains(x.FullData, StringComparison.InvariantCultureIgnoreCase));
+                //if (result != null && result != default)
+                //{
+                    
+                    audiosView.AudiosList.ScrollIntoView(playing);
+                //}
             }
         }
     }

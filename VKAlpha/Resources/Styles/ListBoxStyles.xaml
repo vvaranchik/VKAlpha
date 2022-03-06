@@ -47,14 +47,20 @@
             </Setter.Value>
         </Setter>
     </Style>
+    <!--
+    <Style x:Key="AudioListStyle" TargetType="{x:Type ListBox}" BasedOn="{StaticResource CommonListBoxStyle}">
+        <Setter Property="SelectedItem" Value="{Binding DataContext.CurrentPlayingItem, ElementName=AudiosListV, Mode=OneWay}"/>
+    </Style>
+    -->
     <Style x:Key="AudioListBoxItemStyle" TargetType="{x:Type ListBoxItem}">
         <Setter Property="SnapsToDevicePixels" Value="True"/>
         <Setter Property="Padding" Value="0,0,0,0"/>
         <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
-        <Setter Property="VerticalContentAlignment" Value="{Binding VerticalContentAlignment, RelativeSource={RelativeSource AncestorType={x:Type ItemsControl}}}"/>
+        <Setter Property="VerticalContentAlignment" Value="Stretch"/>
         <Setter Property="Background" Value="Transparent"/>
         <Setter Property="BorderBrush" Value="Transparent"/>
         <Setter Property="BorderThickness" Value="0"/>
+        <Setter Property="IsSelected" Value="{Binding Path=IsPlaying, Mode=OneWay}"/>
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="{x:Type ListBoxItem}">
@@ -68,6 +74,9 @@
                         <Trigger Property="IsMouseOver" Value="True">
                             <Setter Property="Background" TargetName="Bd" Value="{Binding Theme.listboxItemHovered, Source={StaticResource MainLocator}}"/>
                         </Trigger>
+                        <Trigger Property="IsSelected" Value="True">
+                            <Setter Property="Background" TargetName="Bd" Value="{Binding Theme.listboxItemHovered, Source={StaticResource MainLocator}}"/>
+                        </Trigger>
                     </ControlTemplate.Triggers>
                 </ControlTemplate>
             </Setter.Value>
@@ -76,7 +85,7 @@
             <Trigger Property="ItemsControl.AlternationIndex" Value="0">
                 <Setter Property="Background" Value="{DynamicResource AudioAlternationBackgroundBrush}" />
             </Trigger>
-         </Style.Triggers>
+        </Style.Triggers>
     </Style>
     <Style x:Key="FriendListBoxItemStyle" TargetType="{x:Type ListBoxItem}">
         <Setter Property="SnapsToDevicePixels" Value="False"/>
@@ -273,86 +282,46 @@
         </Button>
     </DataTemplate>
     <DataTemplate x:Key="LocalAudioItemTemplate">
-        <Button Style="{StaticResource SimpleButtonStyle}" Command="{Binding DataContext.PlayCommand, ElementName=AudiosListV}" CommandParameter="{Binding FullData}" Padding="0,5,0,5" MaxHeight="32">
-            <Button.RenderTransform>
-                <TranslateTransform />
-            </Button.RenderTransform>
-            <Grid Background="Transparent">
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="220"/>
-                    <ColumnDefinition Width="1*"/>
-                    <ColumnDefinition Width="220"/>
-                </Grid.ColumnDefinitions>
-                <StackPanel Orientation="Vertical" Grid.Column="0" Margin="15 0 -10 0" VerticalAlignment="Center" >
-                    <TextBlock Foreground="{Binding Theme.ForegroundMenu, Source={StaticResource MainLocator}}" x:Name="Title" Text="{Binding Title}" Margin="0 0 5 0" TextTrimming="CharacterEllipsis" FontSize="13" ToolTip="{Binding Title}"/>
-                </StackPanel>
-                <StackPanel Orientation="Vertical" Grid.Column="1" VerticalAlignment="Center" HorizontalAlignment="Center">
-                    <Button Style="{StaticResource SimpleButtonStyle}" Grid.Column="2" HorizontalAlignment="Left" Opacity="0.6" Margin="50,0,0,0" CommandParameter="{Binding Artist}" Command="{Binding MainViewModel.SearchByArtist, Source={StaticResource MainLocator}}">
-                        <TextBlock x:Name="Artist" Text="{Binding Artist}" Foreground="{Binding Theme.ForegroundMenu, Source={StaticResource MainLocator}}" FontSize="13" TextTrimming="CharacterEllipsis" ToolTip="{Binding Artist}"/>
-                    </Button>
-                </StackPanel>
-                <StackPanel HorizontalAlignment="Right" Grid.Column="2" Orientation="Horizontal" Margin="15 0 5 0">
-                    <TextBlock Foreground="{Binding Theme.ForegroundMenu, Source={StaticResource MainLocator}}" x:Name="Duration" Text="{Binding Duration, Converter={StaticResource AudioTimeSpanConverter}}" 
-                               HorizontalAlignment="Right" Opacity="0.6" FontSize="12" VerticalAlignment="Center" Margin="0,0,24,0" TextTrimming="CharacterEllipsis"/>
-                </StackPanel>
-                <StackPanel x:Name="ToolbarPanel" Grid.Column="2" HorizontalAlignment="Right" Margin="0,-2,24,-2" Opacity="0" Orientation="Horizontal" VerticalAlignment="Center">
-                    <Button Style="{StaticResource ToolbarButtonStyle}" Width="24" Height="24" Visibility="{Binding OwnerId, Converter={StaticResource LongToVisibilityConventer}, ConverterParameter=True}"
-                            ToolTip="{Binding AppLang.AddSong, Source={StaticResource MainLocator}}" Command="{Binding MainViewModel.AddSong, Source={StaticResource MainLocator}}" CommandParameter="{Binding}">
-                        <md:PackIcon Kind="Plus" Height="22" Width="22" Background="Transparent"/>
-                    </Button>
-                    <Button Style="{StaticResource ToolbarButtonStyle}" Width="24" Height="24" Visibility="{Binding OwnerId, Converter={StaticResource LongToVisibilityConventer}}"
-                            ToolTip="{Binding AppLang.DelSong, Source={StaticResource MainLocator}}" Command="{Binding MainViewModel.RmSong, Source={StaticResource MainLocator}}" CommandParameter="{Binding FullData}">
-                        <md:PackIcon Kind="Minus" Height="22" Width="22" Background="Transparent"/>
-                    </Button>
-                    <Button Style="{StaticResource ToolbarButtonStyle}" Width="24" Height="24" Command="{Binding MainViewModel.DownloadSong, Source={StaticResource MainLocator}}" CommandParameter="{Binding}">
-                        <md:PackIcon Kind="Download" Height="22" Width="22" Background="Transparent"/>
-                    </Button>
-                    <Button Style="{StaticResource ToolbarButtonStyle}" Width="24" Height="24" Visibility="{Binding OwnerId, Converter={StaticResource LongToVisibilityConventer}}" 
-                            Command="{Binding MainViewModel.EditSong, Source={StaticResource MainLocator}}" CommandParameter="{Binding}" ToolTip="{Binding AppLang.EditSong, Source={StaticResource MainLocator}}">
-                        <md:PackIcon Kind="Edit" Height="22" Width="22" Background="Transparent"/>
-                    </Button>
-                    <Button Style="{StaticResource ToolbarButtonStyle}" Width="24" Height="24" Visibility="{Binding LyricsId, Converter={StaticResource NullToVisibilityConventer}}"
-                            ToolTip="{Binding AppLang.Lyrics, Source={StaticResource MainLocator}}" Command="{Binding MainViewModel.ShowLyrics, Source={StaticResource MainLocator}}" CommandParameter="{Binding}">
-                        <md:PackIcon Kind="NoteText" Height="22" Width="22" Background="Transparent"/>
-                    </Button>
-                </StackPanel>
-                <!--
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="12"/>
-                    <ColumnDefinition Width="0.5*" MaxWidth="500"/>
-                    <ColumnDefinition Width="0.2*"/>
-                    <ColumnDefinition Width="0.2*"/>
-                    <ColumnDefinition Width="0.2*"/>
-                </Grid.ColumnDefinitions>
-                <TextBlock Grid.Column="1" x:Name="Title" Text="{Binding Title}" Foreground="{DynamicResource ForegroundBrush}" FontSize="13" TextTrimming="CharacterEllipsis"
-                           ToolTip="{Binding Title}" Margin="0,0,5,0"/>
-                <Button Style="{StaticResource SimpleButtonStyle}" Grid.Column="2" HorizontalAlignment="Left" Opacity="0.6" Margin="50,0,0,0"
-                        CommandParameter="{Binding Artist}">
-                    <TextBlock x:Name="Artist" Text="{Binding Artist}" Foreground="{DynamicResource ForegroundBrush}" FontSize="13" TextTrimming="CharacterEllipsis"
-                           ToolTip="{Binding Artist}"/>
+        <Grid Background="Transparent" MaxHeight="32" Margin="0 5 0 5">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="1*" MaxWidth="650"/>
+                <ColumnDefinition MinWidth="400"/>
+                <ColumnDefinition Width="1*"/>
+            </Grid.ColumnDefinitions>
+            <StackPanel Orientation="Vertical" Grid.Column="0" Margin="15 0 -10 0" VerticalAlignment="Center" >
+                <TextBlock Foreground="{Binding Theme.ForegroundMenu, Source={StaticResource MainLocator}}" x:Name="Title" Text="{Binding Title}" Margin="0 0 5 0" TextTrimming="CharacterEllipsis" FontSize="13" ToolTip="{Binding Title}"/>
+            </StackPanel>
+            <StackPanel Orientation="Vertical" Grid.Column="1" VerticalAlignment="Center" HorizontalAlignment="Center">
+                <Button Style="{StaticResource SimpleButtonStyle}" Grid.Column="2" HorizontalAlignment="Left" Opacity="0.6" Margin="50,0,0,0" CommandParameter="{Binding Artist}" Command="{Binding MainViewModel.SearchByArtist, Source={StaticResource MainLocator}}">
+                    <TextBlock x:Name="Artist" Text="{Binding Artist}" Foreground="{Binding Theme.ForegroundMenu, Source={StaticResource MainLocator}}" FontSize="13" TextTrimming="CharacterEllipsis" ToolTip="{Binding Artist}"/>
                 </Button>
-                <TextBlock x:Name="Duration" Grid.Column="4" Text="{Binding Duration, Converter={StaticResource AudioTimeSpanConverter}}" Foreground="{DynamicResource ForegroundBrush}"  HorizontalAlignment="Right" Opacity="0.6" FontSize="12" VerticalAlignment="Center" Margin="0,0,24,0" TextTrimming="CharacterEllipsis"/>
-                <StackPanel x:Name="ToolbarPanel"  Grid.Column="4" HorizontalAlignment="Right" Margin="0,-2,24,-2" Opacity="0" Orientation="Horizontal" VerticalAlignment="Center">
-                    <Button Style="{StaticResource ToolbarButtonStyle}" Width="24" Height="24" Visibility="{Binding OwnerId, Converter={StaticResource LongToVisibilityConventer}, ConverterParameter=True}"
-                            ToolTip="Add to Your Playlist">
-                        <md:PackIcon Kind="Plus" Height="22" Width="22" Background="Transparent"/>
-                    </Button>
-                    <Button Style="{StaticResource ToolbarButtonStyle}" Width="24" Height="24" Visibility="{Binding OwnerId, Converter={StaticResource LongToVisibilityConventer}}"
-                            ToolTip="Delete from Your Playlist">
-                        <md:PackIcon Kind="Minus" Height="22" Width="22" Background="Transparent"/>
-                    </Button>
-                    <Button Style="{StaticResource ToolbarButtonStyle}" Width="24" Height="24" Visibility="{Binding OwnerId, Converter={StaticResource LongToVisibilityConventer}}"
-                            ToolTip="Edit">
-                        <md:PackIcon Kind="Edit" Height="22" Width="22" Background="Transparent"/>
-                    </Button>
-                    <Button Style="{StaticResource ToolbarButtonStyle}" Width="24" Height="24" Visibility="{Binding LyricsId, Converter={StaticResource NullToVisibilityConventer}}"
-                            ToolTip="Lyrics">
-                        <md:PackIcon Kind="NoteText" Height="22" Width="22" Background="Transparent"/>
-                    </Button>
-                </StackPanel>
-                -->
-            </Grid>
-        </Button>
+            </StackPanel>
+            <StackPanel HorizontalAlignment="Right" Grid.Column="2" Orientation="Horizontal" Margin="15 0 5 0">
+                <TextBlock Foreground="{Binding Theme.ForegroundMenu, Source={StaticResource MainLocator}}" x:Name="Duration" Text="{Binding Duration, Converter={StaticResource AudioTimeSpanConverter}}" 
+                               HorizontalAlignment="Right" Opacity="0.6" FontSize="12" VerticalAlignment="Center" Margin="0,0,24,0" TextTrimming="CharacterEllipsis"/>
+            </StackPanel>
+            <StackPanel x:Name="ToolbarPanel" Grid.Column="2" HorizontalAlignment="Right" Margin="0,-2,24,-2" Opacity="0" Orientation="Horizontal" VerticalAlignment="Center">
+                <Button Style="{StaticResource ToolbarButtonStyle}" Width="24" Height="24" Visibility="{Binding OwnerId, Converter={StaticResource LongToVisibilityConventer}, ConverterParameter=True}"
+                            ToolTip="{Binding AppLang.AddSong, Source={StaticResource MainLocator}}" Command="{Binding MainViewModel.AddSong, Source={StaticResource MainLocator}}" CommandParameter="{Binding}">
+                    <md:PackIcon Kind="Plus" Height="22" Width="22" Background="Transparent"/>
+                </Button>
+                <Button Style="{StaticResource ToolbarButtonStyle}" Width="24" Height="24" Visibility="{Binding OwnerId, Converter={StaticResource LongToVisibilityConventer}}"
+                            ToolTip="{Binding AppLang.DelSong, Source={StaticResource MainLocator}}" Command="{Binding MainViewModel.RmSong, Source={StaticResource MainLocator}}" CommandParameter="{Binding FullData}">
+                    <md:PackIcon Kind="Minus" Height="22" Width="22" Background="Transparent"/>
+                </Button>
+                <Button Style="{StaticResource ToolbarButtonStyle}" Width="24" Height="24" Command="{Binding MainViewModel.DownloadSong, Source={StaticResource MainLocator}}" CommandParameter="{Binding}">
+                    <md:PackIcon Kind="Download" Height="22" Width="22" Background="Transparent"/>
+                </Button>
+                <Button Style="{StaticResource ToolbarButtonStyle}" Width="24" Height="24" Visibility="{Binding OwnerId, Converter={StaticResource LongToVisibilityConventer}}" 
+                            Command="{Binding MainViewModel.EditSong, Source={StaticResource MainLocator}}" CommandParameter="{Binding}" ToolTip="{Binding AppLang.EditSong, Source={StaticResource MainLocator}}">
+                    <md:PackIcon Kind="Edit" Height="22" Width="22" Background="Transparent"/>
+                </Button>
+                <Button Style="{StaticResource ToolbarButtonStyle}" Width="24" Height="24" Visibility="{Binding LyricsId, Converter={StaticResource NullToVisibilityConventer}}"
+                            ToolTip="{Binding AppLang.Lyrics, Source={StaticResource MainLocator}}" Command="{Binding MainViewModel.ShowLyrics, Source={StaticResource MainLocator}}" CommandParameter="{Binding}">
+                    <md:PackIcon Kind="NoteText" Height="22" Width="22" Background="Transparent"/>
+                </Button>
+            </StackPanel>
+        </Grid>
         <DataTemplate.Triggers>
             <DataTrigger Binding="{Binding RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type ListBoxItem}}, Path=IsMouseOver}" Value="True">
                 <Setter TargetName="Duration" Property="Opacity" Value="0" />

@@ -14,6 +14,7 @@ namespace VKAlpha.Helpers
         private static readonly PlaylistControl _pc = new PlaylistControl();
         private static readonly Lazy<Dialogs.WindowDialogs> _d = new Lazy<Dialogs.WindowDialogs>(() => new Dialogs.WindowDialogs());
         private static readonly Lazy<MainViewModel> _mvm = new Lazy<MainViewModel>(() => new MainViewModel());
+        private static readonly WindowsMediaControls _wmc = new WindowsMediaControls();
 
         internal static Properties.Settings Settings => _settings;
 
@@ -26,6 +27,8 @@ namespace VKAlpha.Helpers
         public static Dialogs.WindowDialogs WindowDialogs => _d.Value;
 
         public static PlaylistControl PlaylistControl => _pc;
+
+        public static WindowsMediaControls SMCProvider => _wmc;
 
         public static BassAudioPlayer BassPlayer => _bass;
 

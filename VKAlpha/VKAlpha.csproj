@@ -137,7 +137,6 @@
     <Compile Include="Extensions\RelayCommand.cs" />
     <Compile Include="Extensions\NotifyPropertyChangedExtension.cs" />
     <Compile Include="Extensions\StringExtensions.cs" />
-    <Compile Include="Helpers\AlbumCoverHelper.cs" />
     <Compile Include="Helpers\BaseSingleton.cs" />
     <Compile Include="Helpers\CacheService.cs" />
     <Compile Include="Helpers\MainViewModel.cs" />
@@ -148,7 +147,9 @@
     <Compile Include="Resources\Themes\ThemeModel.cs" />
     <Compile Include="ViewModels\AudiosListViewModel.cs" />
     <Compile Include="ViewModels\FriendsListViewModel.cs" />
+    <Compile Include="ViewModels\IListViewModel.cs" />
     <Compile Include="ViewModels\InterfaceMenuViewModel.cs" />
+    <Compile Include="ViewModels\AbsViewModel.cs" />
     <Compile Include="ViewModels\LoginViewViewModel.cs" />
     <Compile Include="ViewModels\PlaylistsViewModel.cs" />
     <Compile Include="ViewModels\SettingsViewViewModel.cs" />
@@ -291,6 +292,9 @@
   </ItemGroup>
   <ItemGroup>
     <Resource Include="Resources\alpha.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <WCFMetadata Include="Connected Services\" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">

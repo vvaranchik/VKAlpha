@@ -6,7 +6,7 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:md="http://materialdesigninxaml.net/winfx/xaml/themes"
-        xmlns:i="http://schemas.microsoft.com/expression/2010/interactivity"
+        xmlns:i="http://schemas.microsoft.com/xaml/behaviors"
         xmlns:draweritems="clr-namespace:VKAlpha.Controls"
         xmlns:local="clr-namespace:VKAlpha"
         xmlns:domain="clr-namespace:VKAlpha.Controls"
@@ -21,20 +21,24 @@
         FontFamily="{DynamicResource MaterialDesignFont}"
         GlowBrush="{StaticResource VKColor}"
         BorderThickness="1"
+        DataContext="{Binding MainViewModel, Source={StaticResource MainLocator}}"
         Title="VK Alpha" MinHeight="600" MinWidth="915" Initialized="MetroWindow_Initialized" WindowTitleBrush="RoyalBlue" Name="MainWnd">
     <Window.Resources>
         <Style TargetType="{x:Type ToggleButton}" BasedOn="{StaticResource MaterialDesignActionDarkToggleButton}">
             <Setter Property="Background" Value="Transparent"/>
             <Style.Triggers>
                 <Trigger Property="IsMouseOver" Value="True">
-                    <Setter Property="Foreground" Value="{Binding Theme.btnHovered, Source={StaticResource MainLocator}}"/>
+                    <Setter Property="Foreground" Value="{StaticResource VKColor}"/>
                 </Trigger>
             </Style.Triggers>
         </Style>
         <Style TargetType="{x:Type Slider}" BasedOn="{StaticResource MaterialDesignSlider}"/>
     </Window.Resources>
-    <md:DialogHost Name="RootDialog" Identifier="RootDialog" SnackbarMessageQueue="{Binding ElementName=MainSnackbar, Path=MessageQueue}">
-        <Grid x:Name="GridMain" Background="{Binding Theme.MainBackground, Source={StaticResource MainLocator}}">
+    <md:DialogHost Name="RootDialog" 
+                   Identifier="RootDialog" 
+                   SnackbarMessageQueue="{Binding ElementName=MainSnackbar, Path=MessageQueue}">
+        <Grid x:Name="GridMain" 
+              Background="{Binding Theme.MainBackground, Source={StaticResource MainLocator}}">
             <Grid.RowDefinitions>
                 <RowDefinition Height="*"/>
                 <RowDefinition Height="auto"/>
@@ -58,23 +62,81 @@
                                 <ColumnDefinition Width="64"/>
                                 <ColumnDefinition Width="1*"/>
                             </Grid.ColumnDefinitions>
-                            <Image Margin="0 0 0 0" Grid.Column="0" Width="64" Height="64" Source="{Binding BassPlayer.CurrentTrack.Cover, Source={StaticResource MainLocator}}" Visibility="Visible"/>
-                            <md:PackIcon Kind="Alpha" Width="64" Height="64" VerticalAlignment="Center" Grid.Column="0" Visibility="{Binding BassPlayer.CurrentTrack.Cover, Source={StaticResource MainLocator}, Converter={StaticResource NullToVisibilityConventer}, ConverterParameter=True}"/>
-                            <TextBlock PreviewMouseUp="TextBlock_PreviewMouseUp" Foreground="{Binding Theme.PlayerForegroundBottom, Source={StaticResource MainLocator}}" Text="{Binding BassPlayer.CurrentTrack.Title, Source={StaticResource MainLocator}}" ToolTip="{Binding BassPlayer.CurrentTrack.Title, Source={StaticResource MainLocator}}" TextTrimming="CharacterEllipsis" FontSize="16" Grid.Column="1" Margin="10,10,0,0"/>
-                            <TextBlock Foreground="{Binding Theme.PlayerForegroundBottom, Source={StaticResource MainLocator}}" Text="{Binding BassPlayer.CurrentTrack.Artist, Source={StaticResource MainLocator}}" ToolTip="{Binding BassPlayer.CurrentTrack.Artist, Source={StaticResource MainLocator}}" TextTrimming="CharacterEllipsis" FontSize="16" Grid.Column="1" Margin="10,38,0,0"/>
+                            <Image Margin="0 0 0 0" 
+                                   Grid.Column="0" 
+                                   Width="64" 
+                                   Height="64"
+                                   Source="{Binding CurrentTrack.Cover}" 
+                                   Visibility="Visible"/>
+                            <md:PackIcon 
+                                Kind="Alpha" 
+                                Width="64" 
+                                Height="64" 
+                                VerticalAlignment="Center" 
+                                Grid.Column="0" 
+                                Visibility="{Binding CurrentTrack.Cover, Converter={StaticResource NullToVisibilityConventer}, ConverterParameter=True}"/>
+                            <TextBlock 
+                                PreviewMouseUp="TextBlock_PreviewMouseUp" 
+                                Foreground="{Binding Theme.PlayerForegroundBottom, Source={StaticResource MainLocator}}" 
+                                Text="{Binding CurrentTrack.Title}" 
+                                ToolTip="{Binding CurrentTrack.Title}" 
+                                TextTrimming="CharacterEllipsis" 
+                                FontSize="16" 
+                                Grid.Column="1" 
+                                Margin="10,10,0,0"/>
+                            <TextBlock 
+                                Foreground="{Binding Theme.PlayerForegroundBottom, Source={StaticResource MainLocator}}" 
+                                Text="{Binding CurrentTrack.Artist}" 
+                                ToolTip="{Binding CurrentTrack.Artist}" 
+                                TextTrimming="CharacterEllipsis" 
+                                FontSize="16" 
+                                Grid.Column="1" 
+                                Margin="10,38,0,0"/>
                         </Grid>
                         <StackPanel Orientation="Vertical" Grid.Column="1" VerticalAlignment="Center" Margin="42,0,0,0" >
                             <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
-                                <ToggleButton Margin="0 0 15 0" Width="32" Height="32" IsChecked="{Binding BassPlayer.IsShuffled, Source={StaticResource MainLocator}}">
-                                    <md:PackIcon Foreground="{Binding Theme.checkBoxUncheked, Source={StaticResource MainLocator}}" Kind="ShuffleVariant" Width="32" Height="32" ToolTip="{Binding AppLang.ShuffleOff, Source={StaticResource MainLocator}}"/>
+                                <ToggleButton Margin="0 0 15 0" Width="32" Height="32" IsChecked="{Binding IsShuffled}">
+                                    <md:PackIcon Kind="ShuffleVariant" Width="32" Height="32" ToolTip="{Binding AppLang.ShuffleOff, Source={StaticResource MainLocator}}">
+                                        <md:PackIcon.Style>
+                                            <Style TargetType="{x:Type md:PackIcon}">
+                                                <Style.Triggers>
+                                                    <DataTrigger Binding="{Binding RelativeSource={RelativeSource AncestorType={x:Type ToggleButton}}, Path=IsChecked}" Value="True">
+                                                        <Setter Property="Foreground" Value="{Binding Theme.checkBoxChecked, Source={StaticResource MainLocator}}"/>
+                                                    </DataTrigger>
+                                                    <DataTrigger Binding="{Binding RelativeSource={RelativeSource AncestorType={x:Type ToggleButton}}, Path=IsChecked}" Value="False">
+                                                        <Setter Property="Foreground" Value="{Binding Theme.checkBoxUnchecked, Source={StaticResource MainLocator}}"/>
+                                                    </DataTrigger>
+                                                    <DataTrigger Binding="{Binding RelativeSource={RelativeSource AncestorType={x:Type ToggleButton}}, Path=IsMouseOver}" Value="True">
+                                                        <Setter Property="Foreground" Value="{Binding Theme.btnHovered, Source={StaticResource MainLocator}}"/>
+                                                    </DataTrigger>
+                                                </Style.Triggers>
+                                            </Style>
+                                        </md:PackIcon.Style>
+                                    </md:PackIcon>
                                     <md:ToggleButtonAssist.OnContent>
-                                        <md:PackIcon Foreground="{Binding Theme.checkBoxChecked, Source={StaticResource MainLocator}}" Kind="ShuffleVariant" Width="32" Height="32" ToolTip="{Binding AppLang.ShuffleOn, Source={StaticResource MainLocator}}"/>
+                                        <md:PackIcon Kind="ShuffleVariant" Width="32" Height="32" ToolTip="{Binding AppLang.ShuffleOn, Source={StaticResource MainLocator}}">
+                                            <md:PackIcon.Style>
+                                                <Style TargetType="{x:Type md:PackIcon}">
+                                                    <Style.Triggers>
+                                                        <DataTrigger Binding="{Binding RelativeSource={RelativeSource AncestorType={x:Type ToggleButton}}, Path=IsChecked}" Value="True">
+                                                            <Setter Property="Foreground" Value="{Binding Theme.checkBoxChecked, Source={StaticResource MainLocator}}"/>
+                                                        </DataTrigger>
+                                                        <DataTrigger Binding="{Binding RelativeSource={RelativeSource AncestorType={x:Type ToggleButton}}, Path=IsChecked}" Value="False">
+                                                            <Setter Property="Foreground" Value="{Binding Theme.checkBoxUnchecked, Source={StaticResource MainLocator}}"/>
+                                                        </DataTrigger>
+                                                        <DataTrigger Binding="{Binding RelativeSource={RelativeSource AncestorType={x:Type ToggleButton}}, Path=IsMouseOver}" Value="True">
+                                                            <Setter Property="Foreground" Value="{Binding Theme.btnHovered, Source={StaticResource MainLocator}}"/>
+                                                        </DataTrigger>
+                                                    </Style.Triggers>
+                                                </Style>
+                                            </md:PackIcon.Style>
+                                        </md:PackIcon>
                                     </md:ToggleButtonAssist.OnContent>
                                 </ToggleButton>
                                 <Button Style="{DynamicResource SimpleButtonV2}" Background="Transparent" Command="{Binding SkipPrev}" ToolTip="{Binding AppLang.Prev, Source={StaticResource MainLocator}}">
                                     <md:PackIcon Kind="SkipPrevious" Width="32" Height="28"/>
                                 </Button>
-                                <ToggleButton Margin="15 0 15 0" Width="32" Height="32" IsChecked="{Binding BassPlayer.IsPlaying, Source={StaticResource MainLocator}, Mode=TwoWay}" Command="{Binding PlayCommand}">
+                                <ToggleButton Margin="15 0 15 0" Width="32" Height="32" IsChecked="{Binding IsPlaying}" Command="{Binding PlayCommand}">
                                     <md:PackIcon Kind="PlayCircleOutline" Width="32" Height="32" ToolTip="{Binding AppLang.Play, Source={StaticResource MainLocator}}"/>
                                     <md:ToggleButtonAssist.OnContent>
                                         <md:PackIcon Kind="PauseCircleOutline" Width="32" Height="32" ToolTip="{Binding AppLang.Pause, Source={StaticResource MainLocator}}"/>
@@ -84,9 +146,41 @@
                                     <md:PackIcon Kind="SkipNext" Width="32" Height="28"/>
                                 </Button>
                                 <ToggleButton Margin="15 0 15 0" Width="32" Height="32" IsChecked="{Binding BassPlayer.IsRepeated, Source={StaticResource MainLocator}}">
-                                    <md:PackIcon Foreground="{Binding Theme.checkBoxUncheked, Source={StaticResource MainLocator}}" Kind="Loop" Width="32" Height="32" ToolTip="{Binding AppLang.RepeatOn, Source={StaticResource MainLocator}}"/>
+                                    <md:PackIcon Kind="Loop" Width="32" Height="32" ToolTip="{Binding AppLang.RepeatOn, Source={StaticResource MainLocator}}">
+                                        <md:PackIcon.Style>
+                                            <Style TargetType="{x:Type md:PackIcon}">
+                                                <Style.Triggers>
+                                                    <DataTrigger Binding="{Binding RelativeSource={RelativeSource AncestorType={x:Type ToggleButton}}, Path=IsChecked}" Value="True">
+                                                        <Setter Property="Foreground" Value="{Binding Theme.checkBoxChecked, Source={StaticResource MainLocator}}"/>
+                                                    </DataTrigger>
+                                                    <DataTrigger Binding="{Binding RelativeSource={RelativeSource AncestorType={x:Type ToggleButton}}, Path=IsChecked}" Value="False">
+                                                        <Setter Property="Foreground" Value="{Binding Theme.checkBoxUnchecked, Source={StaticResource MainLocator}}"/>
+                                                    </DataTrigger>
+                                                    <DataTrigger Binding="{Binding RelativeSource={RelativeSource AncestorType={x:Type ToggleButton}}, Path=IsMouseOver}" Value="True">
+                                                        <Setter Property="Foreground" Value="{Binding Theme.btnHovered, Source={StaticResource MainLocator}}"/>
+                                                    </DataTrigger>
+                                                </Style.Triggers>
+                                            </Style>
+                                        </md:PackIcon.Style>
+                                    </md:PackIcon>
                                     <md:ToggleButtonAssist.OnContent>
-                                        <md:PackIcon Foreground="{Binding Theme.checkBoxChecked, Source={StaticResource MainLocator}}" Kind="Loop" Width="32" Height="32" ToolTip="{Binding AppLang.RepeatOff, Source={StaticResource MainLocator}}"/>
+                                        <md:PackIcon Kind="Loop" Width="32" Height="32" ToolTip="{Binding AppLang.RepeatOff, Source={StaticResource MainLocator}}">
+                                            <md:PackIcon.Style>
+                                                <Style TargetType="{x:Type md:PackIcon}">
+                                                    <Style.Triggers>
+                                                        <DataTrigger Binding="{Binding RelativeSource={RelativeSource AncestorType={x:Type ToggleButton}}, Path=IsChecked}" Value="True">
+                                                            <Setter Property="Foreground" Value="{Binding Theme.checkBoxChecked, Source={StaticResource MainLocator}}"/>
+                                                        </DataTrigger>
+                                                        <DataTrigger Binding="{Binding RelativeSource={RelativeSource AncestorType={x:Type ToggleButton}}, Path=IsChecked}" Value="False">
+                                                            <Setter Property="Foreground" Value="{Binding Theme.checkBoxUnchecked, Source={StaticResource MainLocator}}"/>
+                                                        </DataTrigger>
+                                                        <DataTrigger Binding="{Binding RelativeSource={RelativeSource AncestorType={x:Type ToggleButton}}, Path=IsMouseOver}" Value="True">
+                                                            <Setter Property="Foreground" Value="{Binding Theme.btnHovered, Source={StaticResource MainLocator}}"/>
+                                                        </DataTrigger>
+                                                    </Style.Triggers>
+                                                </Style>
+                                            </md:PackIcon.Style>
+                                        </md:PackIcon>
                                     </md:ToggleButtonAssist.OnContent>
                                 </ToggleButton>
                             </StackPanel>
@@ -97,9 +191,10 @@
                                     <ColumnDefinition Width="42"/>
                                 </Grid.ColumnDefinitions>
                                 <TextBlock Foreground="{Binding Theme.PlayerForegroundBottom, Source={StaticResource MainLocator}}" Text="{Binding BassPlayer.SliderValue, Source={StaticResource MainLocator}, Converter={StaticResource DoubleToTimeSpanStringConventer}}" Grid.Column="0" VerticalAlignment="Center" Margin="0 8 0 0" HorizontalAlignment="Left"/>
-                                <TextBlock Foreground="{Binding Theme.PlayerForegroundBottom, Source={StaticResource MainLocator}}" Text="{Binding BassPlayer.CurrentTrack.Duration, Source={StaticResource MainLocator}, Converter={StaticResource AudioTimeSpanConverter}}" Grid.Column="2" VerticalAlignment="Center" Margin="0 8 0 0" HorizontalAlignment="Right"/>
+                                <TextBlock Foreground="{Binding Theme.PlayerForegroundBottom, Source={StaticResource MainLocator}}" Text="{Binding CurrentTrack.Duration, Converter={StaticResource AudioTimeSpanConverter}}" Grid.Column="2" VerticalAlignment="Center" Margin="0 8 0 0" HorizontalAlignment="Right"/>
                                 <Slider IsMoveToPointEnabled="True" Margin="10,8,10,2" Foreground="White"  Minimum="0"  VerticalAlignment="Center"
-                                        Value="{Binding BassPlayer.SliderValue, Source={StaticResource MainLocator}, Mode=TwoWay}" Maximum="{Binding BassPlayer.CurrentTrack.Duration.TotalSeconds, Source={StaticResource MainLocator}}" Grid.Column="1"/>
+                                        Value="{Binding BassPlayer.SliderValue, Source={StaticResource MainLocator}, Mode=TwoWay}" 
+                                        Maximum="{Binding CurrentTrack.Duration.TotalSeconds}" Grid.Column="1"/>
                             </Grid>
                         </StackPanel>
                         <StackPanel Grid.Column="2" Orientation="Horizontal" HorizontalAlignment="Right" Width="172" >
@@ -180,11 +275,14 @@
                                             <ColumnDefinition Width="*" />
                                             <ColumnDefinition Width="Auto" />
                                         </Grid.ColumnDefinitions>
-                                        <Button x:Name="DoSearch" Style="{DynamicResource SimpleButtonV2}" Command="{Binding DoSearch}" CommandParameter="{Binding ElementName=tbSearchQuery, Path=Text}">
-                                            <md:PackIcon Kind="Magnify" Opacity=".86" />
+                                        <!--Toolitp="{Binding AppLang.Search,Source={StaticResource MainLocator}}"-->
+                                        <Button Style="{DynamicResource SimpleButtonV2}"
+                                                Command="{Binding DoSearch}" 
+                                                CommandParameter="{Binding SearchQuery}">
+                                            <md:PackIcon Kind="Magnify" Opacity=".86" Foreground="{Binding Theme.ForegroundElements, Source={StaticResource MainLocator}}"/>
                                         </Button>
-                                        <TextBox x:Name="tbSearchQuery" Text="{Binding SearchQuery, Mode=TwoWay}" md:HintAssist.Foreground="{Binding Theme.HintForeground, Source={StaticResource MainLocator}}"  Foreground="{Binding Theme.TextBoxForeground, Source={StaticResource MainLocator}}"
-                                                 TextChanged="tbSearchQuery_TextChanged" Grid.Column="1" Margin="8 0 0 0" md:HintAssist.Hint="Search query" BorderThickness="0" MinWidth="200" VerticalAlignment="Center"
+                                        <TextBox Text="{Binding SearchQuery, Mode=OneWayToSource, UpdateSourceTrigger=PropertyChanged}" md:HintAssist.Foreground="{Binding Theme.HintForeground, Source={StaticResource MainLocator}}"  Foreground="{Binding Theme.TextBoxForeground, Source={StaticResource MainLocator}}"
+                                                 Grid.Column="1" Margin="8 0 0 0" md:HintAssist.Hint="Search query" BorderThickness="0" MinWidth="200" VerticalAlignment="Center"
                                                  md:TextFieldAssist.DecorationVisibility="Hidden" />
                                     </Grid>
                                 </md:ColorZone>
@@ -198,7 +296,7 @@
                             </Button>
                         </Grid>
                     </md:ColorZone>
-                    <Frame x:Name="FrameMain" NavigationUIVisibility="Hidden" Grid.Row="1"/>
+                    <Frame x:Name="FrameMain" NavigationUIVisibility="Hidden" Grid.Row="1" Content="{Binding FrameMainFE, Mode=TwoWay}"/>
                 </Grid>
             </Grid>
             <md:Snackbar MessageQueue="{Binding MessageQueue}" x:Name="MainSnackbar" Grid.Row="0" />

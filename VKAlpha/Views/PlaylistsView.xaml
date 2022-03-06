@@ -7,7 +7,7 @@
              mc:Ignorable="d" 
              d:DesignHeight="450" d:DesignWidth="800" Name="PlaylistsViewV">
     <Grid>
-        <ListBox Name="PlaylistList" VirtualizingStackPanel.ScrollUnit="Pixel" ScrollViewer.HorizontalScrollBarVisibility="Disabled" ItemsSource="{Binding collection}"
+        <ListBox Name="PlaylistList" VirtualizingStackPanel.ScrollUnit="Pixel" ScrollViewer.HorizontalScrollBarVisibility="Disabled" ItemsSource="{Binding Collection}"
                  ItemContainerStyle="{StaticResource FriendListBoxItemStyle}" Style="{StaticResource CommonListBoxStyle}" ItemTemplate="{StaticResource PlaylistItemTemplate}">
             <ListBox.ItemsPanel>
                 <ItemsPanelTemplate>

@@ -2,48 +2,28 @@
 
 namespace VKAlpha.Helpers
 {
-    public abstract class CClass
-    {
-        public static bool operator! (CClass @this) => @this == null;
-        public static bool operator false(CClass @this) => !@this || @this == default;
-        public static bool operator true(CClass @this) => !!@this || @this != default;
-    }
-
-    public abstract class BaseSingleton<T> : CClass, IDisposable where T : CClass
+    public abstract class BaseSingleton<T>
     {
         static bool is_destroyed = false;
 
-        static protected volatile T instance;
-        static protected object instance_locker = new object();
+        static protected T instance;
+        static private object instance_locker = new object();
 
         public static T Get
         {
             get
             {
-                if (!instance && !is_destroyed)
+                if (instance == null && !is_destroyed)
                 {
                     lock (instance_locker)
                     {
-                        if (!instance && !is_destroyed)
+                        if (instance == null && !is_destroyed)
                         {
                             instance = Activator.CreateInstance<T>();
                         }
                     }
                 }
                 return instance;
-            }
-        }
-
-        static object one_way_locker = new object();
-
-        public static T GetOneWay
-        {
-            get
-            {
-                lock (one_way_locker)
-                {
-                    return Get;
-                }
             }
         }
 
@@ -55,13 +35,8 @@ namespace VKAlpha.Helpers
             lock (instance_locker)
             {
                 is_destroyed = true;
-                instance = null;
+                instance = default;
             }
-        }
-
-        public void Dispose()
-        {
-            Destroy();
         }
     }
 }

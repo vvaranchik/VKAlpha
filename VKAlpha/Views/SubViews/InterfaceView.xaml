@@ -24,8 +24,8 @@
             <TextBlock TextAlignment="Left" FontSize="15" FontWeight="Regular" Margin="25 10 0 0" Text="{Binding AppLang.Language,Source={StaticResource MainLocator}}" Foreground="{Binding Theme.ForegroundMenu,Source={StaticResource MainLocator}}" Grid.Column="0"/>
         </StackPanel>
         <StackPanel Grid.Column="1" Orientation="Vertical">
-            <ToggleButton IsChecked="{Binding LoadTrackCovers}" Foreground="{Binding Theme.checkBoxUncheked, Source={StaticResource MainLocator}}" HorizontalAlignment="Left" Margin="0 90 0 0"/>
-            <ToggleButton IsEnabled="{Binding LoadTrackCovers}" IsChecked="{Binding CacheTrackCovers}" Foreground="{Binding Theme.checkBoxUncheked, Source={StaticResource MainLocator}}" HorizontalAlignment="Left" Margin="0 13 0 0"/>
+            <ToggleButton IsChecked="{Binding LoadTrackCovers}" Foreground="{Binding Theme.checkBoxUnchecked, Source={StaticResource MainLocator}}" HorizontalAlignment="Left" Margin="0 90 0 0"/>
+            <ToggleButton IsEnabled="{Binding LoadTrackCovers}" IsChecked="{Binding CacheTrackCovers}" Foreground="{Binding Theme.checkBoxUnchecked, Source={StaticResource MainLocator}}" HorizontalAlignment="Left" Margin="0 13 0 0"/>
             <ComboBox ItemsSource="{Binding Themes}" SelectedItem="{Binding CurrentTheme}" HorizontalAlignment="Left" Margin="0 90 0 0" Foreground="{Binding Theme.ForegroundMenu,Source={StaticResource MainLocator}}"/>
             <ComboBox ItemsSource="{Binding Languages}" SelectedItem="{Binding CurrentLang}" HorizontalAlignment="Left" Margin="0 0 0 0" Foreground="{Binding Theme.ForegroundMenu,Source={StaticResource MainLocator}}"/>
         </StackPanel>

@@ -16,7 +16,7 @@ namespace VKAlpha.Resources.Themes
         [JsonProperty(Required = Required.Always)]
         public Brush checkBoxChecked { get; set; }
         [JsonProperty(Required = Required.Always)]
-        public Brush checkBoxUncheked { get; set; }
+        public Brush checkBoxUnchecked { get; set; }
 
         [JsonProperty(Required = Required.Always)]
         public string name { get; set; }
